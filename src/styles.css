@@ -142,3 +142,63 @@
     color: var(--color-foreground);
   }
 }
+
+/* ---- LicenceHub design tokens ---- */
+:root {
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --background: oklch(0.985 0.006 90);
+  --foreground: oklch(0.22 0.03 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 265);
+  --primary: oklch(0.45 0.16 265);
+  --primary-foreground: oklch(0.985 0.006 90);
+  --secondary: oklch(0.95 0.012 265);
+  --secondary-foreground: oklch(0.28 0.04 265);
+  --muted: oklch(0.955 0.01 265);
+  --muted-foreground: oklch(0.52 0.03 265);
+  --accent: oklch(0.94 0.02 265);
+  --accent-foreground: oklch(0.28 0.04 265);
+  --border: oklch(0.9 0.012 265);
+  --input: oklch(0.9 0.012 265);
+  --ring: oklch(0.45 0.16 265);
+
+  --seg: oklch(0.52 0.19 252);
+  --seg-accent: oklch(0.72 0.13 205);
+  --seg-soft: oklch(0.96 0.03 235);
+  --pc: oklch(0.5 0.22 295);
+  --pc-accent: oklch(0.52 0.2 270);
+  --pc-soft: oklch(0.96 0.03 290);
+  --agro: oklch(0.52 0.14 155);
+  --agro-accent: oklch(0.68 0.14 165);
+  --agro-soft: oklch(0.96 0.04 160);
+  --warning: oklch(0.72 0.16 75);
+  --success: oklch(0.58 0.15 155);
+}
+
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --color-seg: var(--seg);
+  --color-seg-accent: var(--seg-accent);
+  --color-seg-soft: var(--seg-soft);
+  --color-pc: var(--pc);
+  --color-pc-accent: var(--pc-accent);
+  --color-pc-soft: var(--pc-soft);
+  --color-agro: var(--agro);
+  --color-agro-accent: var(--agro-accent);
+  --color-agro-soft: var(--agro-soft);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}

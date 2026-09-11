@@ -59,11 +59,7 @@ export function useIsAdmin(userId: string | undefined) {
   });
 }
 
-/** True only once the role query has actually resolved for a known user. */
-export function useRolesReady(userId: string | undefined, query: { isSuccess: boolean; isError: boolean }) {
-  if (!userId) return false;
-  return query.isSuccess || query.isError;
-}
+
 
 
 export async function openDocument(storagePath: string) {

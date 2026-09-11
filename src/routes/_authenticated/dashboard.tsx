@@ -58,7 +58,7 @@ function Dashboard() {
   const isAdmin = roles?.isAdmin ?? false;
   const canUpload = isAdmin || (roles?.canUpload ?? false);
 
-  const [major, setMajor] = useState<Major | "">("all" as never);
+  const [major, setMajor] = useState<Major | "all">("all");
   const [level, setLevel] = useState<string>("all");
   const [kind, setKind] = useState<DocKind | "all">("all");
   const [search, setSearch] = useState("");

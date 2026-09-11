@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useProfile, useSessionUser } from "@/hooks/useLicenceHub";
+import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
 import { LEVELS, MAJORS, levelLabel, type Major } from "@/lib/licencehub";
 
 export const Route = createFileRoute("/_authenticated/register")({
@@ -57,6 +57,7 @@ function RegisterPage() {
   const queryClient = useQueryClient();
   const { user } = useSessionUser();
   const { data: profile, isLoading } = useProfile(user?.id);
+  const { data: roles } = useIsAdmin(user?.id);
 
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
@@ -70,9 +71,15 @@ function RegisterPage() {
     if (user?.email && !gmail) setGmail(user.email);
   }, [user?.email, gmail]);
 
+  // Managers never fill the student form.
   useEffect(() => {
-    if (profile) navigate({ to: "/pending", replace: true });
-  }, [profile, navigate]);
+    if (roles?.isAdmin) navigate({ to: "/admin", replace: true });
+  }, [roles?.isAdmin, navigate]);
+
+  useEffect(() => {
+    if (profile && !roles?.isAdmin) navigate({ to: "/pending", replace: true });
+  }, [profile, roles?.isAdmin, navigate]);
+
 
   async function submit() {
     const parsed = schema.safeParse({

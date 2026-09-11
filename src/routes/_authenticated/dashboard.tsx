@@ -52,25 +52,29 @@ function Dashboard() {
   const queryClient = useQueryClient();
   const { user } = useSessionUser();
   const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
-  const { data: roles } = useIsAdmin(user?.id);
+  const rolesQuery = useIsAdmin(user?.id);
+  const roles = rolesQuery.data;
+  const rolesResolved = Boolean(user) && (rolesQuery.isSuccess || rolesQuery.isError);
   const isAdmin = roles?.isAdmin ?? false;
   const canUpload = isAdmin || (roles?.canUpload ?? false);
 
-  const [major, setMajor] = useState<Major | "all">("all");
+  const [major, setMajor] = useState<Major | "">("all" as never);
   const [level, setLevel] = useState<string>("all");
   const [kind, setKind] = useState<DocKind | "all">("all");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (profileLoading) return;
-    if (!profile && !isAdmin) {
+    if (profileLoading || !rolesResolved) return;
+    if (isAdmin) return;
+    if (!profile) {
       navigate({ to: "/register", replace: true });
       return;
     }
-    if (profile && profile.status !== "approved" && !isAdmin) {
+    if (profile.status !== "approved") {
       navigate({ to: "/pending", replace: true });
     }
-  }, [profile, profileLoading, isAdmin, navigate]);
+  }, [profile, profileLoading, rolesResolved, isAdmin, navigate]);
+
 
   useEffect(() => {
     if (profile) {

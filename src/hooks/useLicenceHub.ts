@@ -59,6 +59,9 @@ export function useIsAdmin(userId: string | undefined) {
   });
 }
 
+
+
+
 export async function openDocument(storagePath: string) {
   const { data, error } = await supabase.storage.from("documents").createSignedUrl(storagePath, 120);
   if (error || !data) throw error ?? new Error("Lien indisponible");

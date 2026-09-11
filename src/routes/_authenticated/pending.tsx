@@ -4,7 +4,7 @@ import { Clock, ShieldX } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { useProfile, useSessionUser } from "@/hooks/useLicenceHub";
+import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
 import { levelLabel, majorStyle } from "@/lib/licencehub";
 
 export const Route = createFileRoute("/_authenticated/pending")({
@@ -26,11 +26,16 @@ function PendingPage() {
   const navigate = useNavigate();
   const { user } = useSessionUser();
   const { data: profile, isLoading } = useProfile(user?.id);
+  const { data: roles } = useIsAdmin(user?.id);
 
   useEffect(() => {
+    if (roles?.isAdmin) {
+      navigate({ to: "/admin", replace: true });
+      return;
+    }
     if (!isLoading && !profile) navigate({ to: "/register", replace: true });
     if (profile?.status === "approved") navigate({ to: "/dashboard", replace: true });
-  }, [isLoading, profile, navigate]);
+  }, [isLoading, profile, roles?.isAdmin, navigate]);
 
   const rejected = profile?.status === "rejected";
 

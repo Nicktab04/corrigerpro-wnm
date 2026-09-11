@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { useSessionUser } from "@/hooks/useLicenceHub";
+import { useIsAdmin, useSessionUser } from "@/hooks/useLicenceHub";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -42,14 +42,18 @@ function AuthPage() {
   const { mode } = Route.useSearch();
   const navigate = useNavigate();
   const { user, loading } = useSessionUser();
+  const rolesQuery = useIsAdmin(user?.id);
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [sentConfirm, setSentConfirm] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
-  }, [loading, user, navigate]);
+    if (loading || !user) return;
+    if (!rolesQuery.isSuccess && !rolesQuery.isError) return;
+    navigate({ to: rolesQuery.data?.isAdmin ? "/admin" : "/dashboard", replace: true });
+  }, [loading, user, rolesQuery.isSuccess, rolesQuery.isError, rolesQuery.data, navigate]);
+
 
   async function signIn() {
     setBusy(true);

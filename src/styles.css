@@ -194,11 +194,26 @@
 }
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
   body {
     font-family: var(--font-body);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* Radix scroll-lock can leave the page unscrollable / unclickable after a
+       Select or Dialog closes; keep normal scrolling and pointer events. */
+    pointer-events: auto !important;
+  }
+  body[data-scroll-locked] {
+    overflow-y: auto !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
   }
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
 }
+

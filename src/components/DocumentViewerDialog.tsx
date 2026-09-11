@@ -210,7 +210,7 @@ export function DocumentViewerDialog({
                 }
                 className="flex min-h-full justify-center p-3"
               >
-                <Page pageNumber={pageNumber} width={pageWidth} />
+                <Page pageNumber={pageNumber} {...(pageWidth ? { width: pageWidth } : {})} />
               </Document>
             ) : kind === "image" ? (
               <div className="flex min-h-full min-w-full items-start justify-center p-2 sm:p-4">

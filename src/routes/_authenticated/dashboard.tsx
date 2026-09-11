@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Download, ExternalLink, FileText, Loader2, Trash2 } from "lucide-react";
+import { Download, Eye, FileText, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
+import { DocumentViewerDialog } from "@/components/DocumentViewerDialog";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { openDocument, useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
+import {
+  downloadDocument,
+  openDocument,
+  useIsAdmin,
+  useProfile,
+  useSessionUser,
+} from "@/hooks/useLicenceHub";
 import {
   LEVELS,
   MAJORS,
@@ -62,6 +69,9 @@ function Dashboard() {
   const [level, setLevel] = useState<string>("all");
   const [kind, setKind] = useState<DocKind | "all">("all");
   const [search, setSearch] = useState("");
+  const [viewerDocument, setViewerDocument] = useState<DocumentRow | null>(null);
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (profileLoading || !rolesResolved) return;
@@ -104,19 +114,26 @@ function Dashboard() {
     },
   });
 
-  async function open(doc: DocumentRow, download = false) {
+  async function view(doc: DocumentRow) {
+    setViewerDocument(doc);
+    setViewerUrl(null);
     try {
       const url = await openDocument(doc.storage_path);
-      if (download) {
-        const a = window.document.createElement("a");
-        a.href = url;
-        a.download = doc.title;
-        a.click();
-      } else {
-        window.open(url, "_blank", "noopener");
-      }
+      setViewerUrl(url);
     } catch {
+      setViewerDocument(null);
       toast.error("Impossible d'ouvrir ce fichier");
+    }
+  }
+
+  async function download(doc: DocumentRow) {
+    setDownloadingId(doc.id);
+    try {
+      await downloadDocument(doc.storage_path, doc.title);
+    } catch {
+      toast.error("Impossible de télécharger ce fichier");
+    } finally {
+      setDownloadingId(null);
     }
   }
 
@@ -219,11 +236,16 @@ function Dashboard() {
                   <h2 className="mt-3 text-base font-bold">{doc.title}</h2>
                   <p className="text-sm text-muted-foreground">{doc.subject}</p>
                   <div className="mt-4 flex flex-wrap gap-2 pt-1">
-                    <Button size="sm" variant="outline" onClick={() => open(doc)}>
-                      <ExternalLink className="mr-1.5 size-4" /> Consulter
+                    <Button size="sm" variant="outline" onClick={() => view(doc)}>
+                      <Eye className="mr-1.5 size-4" /> Consulter
                     </Button>
-                    <Button size="sm" onClick={() => open(doc, true)}>
-                      <Download className="mr-1.5 size-4" /> Télécharger
+                    <Button size="sm" onClick={() => download(doc)} disabled={downloadingId === doc.id}>
+                      {downloadingId === doc.id ? (
+                        <Loader2 className="mr-1.5 size-4 animate-spin" />
+                      ) : (
+                        <Download className="mr-1.5 size-4" />
+                      )}
+                      Télécharger
                     </Button>
                     {isAdmin ? (
                       <Button size="sm" variant="ghost" onClick={() => remove(doc)}>
@@ -237,6 +259,21 @@ function Dashboard() {
           })}
         </div>
       )}
+      <DocumentViewerDialog
+        document={viewerDocument}
+        url={viewerUrl}
+        open={Boolean(viewerDocument)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setViewerDocument(null);
+            setViewerUrl(null);
+          }
+        }}
+        onDownload={() => {
+          if (viewerDocument) void download(viewerDocument);
+        }}
+        downloading={Boolean(viewerDocument && downloadingId === viewerDocument.id)}
+      />
     </AppShell>
   );
 }

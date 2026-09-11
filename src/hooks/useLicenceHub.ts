@@ -67,3 +67,20 @@ export async function openDocument(storagePath: string) {
   if (error || !data) throw error ?? new Error("Lien indisponible");
   return data.signedUrl;
 }
+
+export async function downloadDocument(storagePath: string, title: string) {
+  const { data, error } = await supabase.storage.from("documents").download(storagePath);
+  if (error || !data) throw error ?? new Error("Téléchargement indisponible");
+
+  const extension = storagePath.split("?")[0]?.split(".").pop();
+  const cleanTitle = title.replace(/[\\/:*?"<>|]/g, "-").trim() || "document";
+  const filename = extension ? `${cleanTitle}.${extension}` : cleanTitle;
+  const objectUrl = URL.createObjectURL(data);
+  const anchor = window.document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.download = filename;
+  window.document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
+}

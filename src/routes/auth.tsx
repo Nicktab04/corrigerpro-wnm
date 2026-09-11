@@ -17,6 +17,9 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/auth")({
+  // Auth state lives in the browser only; SSR-ing this page produced a
+  // hydration mismatch that blanked the screen.
+  ssr: false,
   validateSearch: searchSchema,
   head: () => ({
     meta: [

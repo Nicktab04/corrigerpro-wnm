@@ -75,37 +75,64 @@ function buildFilename(storagePath: string, title: string) {
   return hasExtension ? `${cleanTitle}.${extension}` : cleanTitle;
 }
 
-function triggerAnchorDownload(href: string, filename: string) {
+function triggerAnchorDownload(href: string, filename: string, sameOrigin: boolean) {
   const anchor = window.document.createElement("a");
   anchor.href = href;
-  anchor.download = filename;
+  if (sameOrigin) anchor.download = filename;
   anchor.rel = "noopener";
+  anchor.target = sameOrigin ? "_self" : "_blank";
   anchor.style.display = "none";
   window.document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
 }
 
+async function blobDownload(storagePath: string, filename: string) {
+  const { data, error } = await supabase.storage.from("documents").download(storagePath);
+  if (error || !data) throw error ?? new Error("Téléchargement indisponible");
+  const objectUrl = URL.createObjectURL(data);
+  triggerAnchorDownload(objectUrl, filename, true);
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+}
+
 export async function downloadDocument(storagePath: string, title: string) {
   const filename = buildFilename(storagePath, title);
+  const errors: unknown[] = [];
 
-  // Preferred path: signed URL with attachment headers — works on iOS/Android
-  // where blob-URL downloads are often blocked.
-  const { data: signed } = await supabase.storage
-    .from("documents")
-    .createSignedUrl(storagePath, 120, { download: filename });
+  // 1) Signed URL with attachment headers — best on iOS/Android where
+  //    blob-URL downloads are often blocked.
+  let signedUrl: string | null = null;
+  try {
+    const { data, error } = await supabase.storage
+      .from("documents")
+      .createSignedUrl(storagePath, 300, { download: filename });
+    if (error) throw error;
+    signedUrl = data?.signedUrl ?? null;
+    if (signedUrl) {
+      triggerAnchorDownload(signedUrl, filename, false);
+      return;
+    }
+  } catch (error) {
+    errors.push(error);
+  }
 
-  if (signed?.signedUrl) {
-    triggerAnchorDownload(signed.signedUrl, filename);
+  // 2) Fetch the private file and save the blob locally.
+  try {
+    await blobDownload(storagePath, filename);
+    return;
+  } catch (error) {
+    errors.push(error);
+  }
+
+  // 3) Last resort: open the signed link so the user can save it manually.
+  if (signedUrl) {
+    const opened = window.open(signedUrl, "_blank", "noopener");
+    if (opened) return;
+    window.location.href = signedUrl;
     return;
   }
 
-  // Fallback: fetch the private file and download the blob.
-  const { data, error } = await supabase.storage.from("documents").download(storagePath);
-  if (error || !data) throw error ?? new Error("Téléchargement indisponible");
-
-  const objectUrl = URL.createObjectURL(data);
-  triggerAnchorDownload(objectUrl, filename);
-  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  throw errors[0] ?? new Error("Téléchargement indisponible");
 }
+
 

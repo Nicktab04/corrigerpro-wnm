@@ -31,6 +31,7 @@ function fileKind(path: string): ViewerKind {
 export function DocumentViewerDialog({
   document,
   url,
+  watermark,
   open,
   onOpenChange,
   onDownload,
@@ -38,6 +39,7 @@ export function DocumentViewerDialog({
 }: {
   document: DocumentRow | null;
   url: string | null;
+  watermark?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDownload: () => void;
@@ -210,16 +212,20 @@ export function DocumentViewerDialog({
                 }
                 className="flex min-h-full justify-center p-3"
               >
-                <Page pageNumber={pageNumber} {...(pageWidth ? { width: pageWidth } : {})} />
+                <div className="relative w-fit max-w-full overflow-hidden">
+                  <Page pageNumber={pageNumber} {...(pageWidth ? { width: pageWidth } : {})} />
+                  {watermark ? <WatermarkOverlay text={watermark} /> : null}
+                </div>
               </Document>
             ) : kind === "image" ? (
               <div className="flex min-h-full min-w-full items-start justify-center p-2 sm:p-4">
-                <img
-                  src={url}
-                  alt={document.title}
-                  className={`block h-auto max-w-full origin-top object-contain transition-transform ${imageZoomClass}`}
+                <div
+                  className={`relative w-fit max-w-full origin-top overflow-hidden transition-transform ${imageZoomClass}`}
                   onDoubleClick={() => setImageZoom((zoom) => (zoom === 1 ? 2 : 1))}
-                />
+                >
+                  <img src={url} alt={document.title} className="block h-auto max-w-full object-contain" />
+                  {watermark ? <WatermarkOverlay text={watermark} /> : null}
+                </div>
               </div>
             ) : (
               <div className="grid h-full place-items-center p-8 text-center">
@@ -238,5 +244,23 @@ export function DocumentViewerDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function WatermarkOverlay({ text }: { text: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-10 grid select-none grid-cols-2 content-around overflow-hidden text-foreground/15 sm:grid-cols-3"
+    >
+      {Array.from({ length: 12 }, (_, index) => (
+        <span
+          key={index}
+          className="block rotate-[-28deg] whitespace-nowrap px-2 text-center text-[10px] font-semibold sm:text-xs"
+        >
+          {text}
+        </span>
+      ))}
+    </div>
   );
 }

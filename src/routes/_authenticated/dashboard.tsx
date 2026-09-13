@@ -262,6 +262,7 @@ function Dashboard() {
       <DocumentViewerDialog
         document={viewerDocument}
         url={viewerUrl}
+        watermark={profile ? `${profile.nom} ${profile.prenom} • ${profile.gmail}` : undefined}
         open={Boolean(viewerDocument)}
         onOpenChange={(nextOpen) => {
           if (!nextOpen) {

@@ -95,6 +95,52 @@ async function blobDownload(storagePath: string, filename: string) {
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
 }
 
+/**
+ * Ouvre le document dans un nouvel onglet.
+ * La fenêtre est ouverte SYNCHRONEMENT (dans le geste utilisateur) puis
+ * redirigée vers l'URL signée : c'est le seul moyen fiable d'éviter les
+ * bloqueurs de pop-up et les onglets "about:blank" sur Safari/Chrome mobile.
+ */
+export async function openDocumentInNewTab(storagePath: string) {
+  const tab = window.open("", "_blank", "noopener,noreferrer");
+
+  let signedUrl: string;
+  try {
+    const { data, error } = await supabase.storage
+      .from("documents")
+      .createSignedUrl(storagePath, 3600);
+    if (error || !data?.signedUrl) throw error ?? new Error("Lien indisponible");
+    signedUrl = data.signedUrl;
+  } catch (error) {
+    tab?.close();
+    throw error;
+  }
+
+  if (tab && !tab.closed) {
+    tab.location.replace(signedUrl);
+    tab.focus();
+    return;
+  }
+
+  // Pop-up bloquée : dernier recours, on tente un clic sur une ancre puis la
+  // navigation dans l'onglet courant.
+  triggerAnchorOpen(signedUrl);
+}
+
+function triggerAnchorOpen(href: string) {
+  const anchor = window.document.createElement("a");
+  anchor.href = href;
+  anchor.target = "_blank";
+  anchor.rel = "noopener noreferrer";
+  anchor.style.display = "none";
+  window.document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => {
+    if (window.document.visibilityState === "visible") window.location.href = href;
+  }, 800);
+}
+
 export async function downloadDocument(storagePath: string, title: string) {
   const filename = buildFilename(storagePath, title);
   const errors: unknown[] = [];

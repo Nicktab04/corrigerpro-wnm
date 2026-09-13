@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  downloadDocument,
   openDocument,
+  openDocumentInNewTab,
   useIsAdmin,
   useProfile,
   useSessionUser,
@@ -129,9 +129,9 @@ function Dashboard() {
   async function download(doc: DocumentRow) {
     setDownloadingId(doc.id);
     try {
-      await downloadDocument(doc.storage_path, doc.title);
+      await openDocumentInNewTab(doc.storage_path);
     } catch {
-      toast.error("Impossible de télécharger ce fichier");
+      toast.error("Impossible d'ouvrir ce fichier");
     } finally {
       setDownloadingId(null);
     }

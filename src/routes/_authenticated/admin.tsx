@@ -17,12 +17,12 @@ import { levelLabel, majorStyle, type AccessStatus, type Profile } from "@/lib/l
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Administration — LicenceHub" },
+      { title: "Administration — CorrigéPro" },
       {
         name: "description",
         content: "Validez les demandes d'accès, gérez les droits de dépôt et publiez des annales.",
       },
-      { property: "og:title", content: "Administration — LicenceHub" },
+      { property: "og:title", content: "Administration — CorrigéPro" },
       {
         property: "og:description",
         content: "Validez les demandes d'accès, gérez les droits de dépôt et publiez des annales.",

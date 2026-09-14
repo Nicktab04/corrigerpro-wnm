@@ -34,7 +34,7 @@ export function AppShell({
               <GraduationCap className="size-5" />
             </span>
             <span className="min-w-0">
-              <span className="block truncate font-display font-bold leading-none">LicenceHub</span>
+              <span className="block truncate font-display font-bold leading-none">CorrigéPro</span>
               {subtitle ? (
                 <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>
               ) : null}

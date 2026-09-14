@@ -23,15 +23,15 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Connexion — LicenceHub" },
+      { title: "Connexion — CorrigéPro" },
       {
         name: "description",
-        content: "Connectez-vous à LicenceHub ou créez votre compte étudiant pour demander un accès.",
+        content: "Connectez-vous à CorrigéPro ou créez votre compte étudiant pour demander un accès.",
       },
-      { property: "og:title", content: "Connexion — LicenceHub" },
+      { property: "og:title", content: "Connexion — CorrigéPro" },
       {
         property: "og:description",
-        content: "Connectez-vous à LicenceHub ou créez votre compte étudiant.",
+        content: "Connectez-vous à CorrigéPro ou créez votre compte étudiant.",
       },
     ],
   }),
@@ -94,7 +94,7 @@ function AuthPage() {
       <div className="hidden flex-col justify-between bg-primary p-10 text-primary-foreground lg:flex">
         <Link to="/" className="flex items-center gap-2">
           <GraduationCap className="size-6" />
-          <span className="font-display text-lg font-bold">LicenceHub</span>
+          <span className="font-display text-lg font-bold">CorrigéPro</span>
         </Link>
         <div>
           <h2 className="font-display text-4xl font-extrabold">
@@ -112,7 +112,7 @@ function AuthPage() {
         <div className="w-full max-w-sm">
           <Link to="/" className="mb-8 flex items-center gap-2 lg:hidden">
             <GraduationCap className="size-5 text-primary" />
-            <span className="font-display font-bold">LicenceHub</span>
+            <span className="font-display font-bold">CorrigéPro</span>
           </Link>
 
           {sentConfirm ? (

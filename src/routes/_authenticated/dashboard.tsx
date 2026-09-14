@@ -39,12 +39,12 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Mes annales — LicenceHub" },
+      { title: "Mes annales — CorrigéPro" },
       {
         name: "description",
         content: "Filtrez les sujets d'examens et corrections par filière, niveau, matière et année.",
       },
-      { property: "og:title", content: "Mes annales — LicenceHub" },
+      { property: "og:title", content: "Mes annales — CorrigéPro" },
       {
         property: "og:description",
         content: "Filtrez les sujets d'examens et corrections par filière, niveau, matière et année.",
@@ -262,7 +262,7 @@ function Dashboard() {
       <DocumentViewerDialog
         document={viewerDocument}
         url={viewerUrl}
-        watermark={profile ? `${profile.nom} ${profile.prenom} • ${profile.gmail}` : undefined}
+        {...(profile ? { watermark: `${profile.nom} ${profile.prenom} • ${profile.gmail}` } : {})}
         open={Boolean(viewerDocument)}
         onOpenChange={(nextOpen) => {
           if (!nextOpen) {

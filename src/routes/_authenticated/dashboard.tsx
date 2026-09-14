@@ -24,7 +24,7 @@ import {
   useIsAdmin,
   useProfile,
   useSessionUser,
-} from "@/hooks/useCorrigéPro";
+} from "@/hooks/useLicenceHub";
 import {
   LEVELS,
   MAJORS,
@@ -262,7 +262,7 @@ function Dashboard() {
       <DocumentViewerDialog
         document={viewerDocument}
         url={viewerUrl}
-        watermark={profile ? `${profile.nom} ${profile.prenom} • ${profile.gmail}` : undefined}
+        {...(profile ? { watermark: `${profile.nom} ${profile.prenom} • ${profile.gmail}` } : {})}
         open={Boolean(viewerDocument)}
         onOpenChange={(nextOpen) => {
           if (!nextOpen) {

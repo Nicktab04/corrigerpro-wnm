@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsAdmin, useSessionUser } from "@/hooks/useCorrigéPro";
+import { useIsAdmin, useSessionUser } from "@/hooks/useLicenceHub";
 import { levelLabel, majorStyle, type AccessStatus, type Profile } from "@/lib/licencehub";
 
 export const Route = createFileRoute("/_authenticated/admin")({

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { useIsAdmin, useSessionUser } from "@/hooks/useCorrigéPro";
+import { useIsAdmin, useSessionUser } from "@/hooks/useLicenceHub";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),

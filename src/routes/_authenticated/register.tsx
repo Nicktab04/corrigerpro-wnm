@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useCorrigéPro";
+import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
 import { LEVELS, MAJORS, levelLabel, type Major } from "@/lib/licencehub";
 
 export const Route = createFileRoute("/_authenticated/register")({

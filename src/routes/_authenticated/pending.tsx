@@ -4,7 +4,7 @@ import { Clock, ShieldX } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useCorrigéPro";
+import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
 import { levelLabel, majorStyle } from "@/lib/licencehub";
 
 export const Route = createFileRoute("/_authenticated/pending")({

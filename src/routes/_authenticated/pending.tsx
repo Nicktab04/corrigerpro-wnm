@@ -4,15 +4,15 @@ import { Clock, ShieldX } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
+import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useCorrigéPro";
 import { levelLabel, majorStyle } from "@/lib/licencehub";
 
 export const Route = createFileRoute("/_authenticated/pending")({
   head: () => ({
     meta: [
-      { title: "Demande en attente — LicenceHub" },
+      { title: "Demande en attente — CorrigéPro" },
       { name: "description", content: "Votre demande d'accès aux annales est en cours de validation." },
-      { property: "og:title", content: "Demande en attente — LicenceHub" },
+      { property: "og:title", content: "Demande en attente — CorrigéPro" },
       {
         property: "og:description",
         content: "Votre demande d'accès aux annales est en cours de validation.",

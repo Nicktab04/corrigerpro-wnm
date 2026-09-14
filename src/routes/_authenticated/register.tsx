@@ -17,18 +17,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
+import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useCorrigéPro";
 import { LEVELS, MAJORS, levelLabel, type Major } from "@/lib/licencehub";
 
 export const Route = createFileRoute("/_authenticated/register")({
   head: () => ({
     meta: [
-      { title: "Demande d'accès — LicenceHub" },
+      { title: "Demande d'accès — CorrigéPro" },
       {
         name: "description",
         content: "Complétez vos informations d'étudiant pour demander l'accès aux annales.",
       },
-      { property: "og:title", content: "Demande d'accès — LicenceHub" },
+      { property: "og:title", content: "Demande d'accès — CorrigéPro" },
       {
         property: "og:description",
         content: "Complétez vos informations d'étudiant pour demander l'accès aux annales.",

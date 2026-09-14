@@ -7,13 +7,13 @@ import { MAJORS, LEVELS, levelLabel } from "@/lib/licencehub";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LicenceHub — Sujets et corrections par filière" },
+      { title: "CorrigéPro — Sujets et corrections par filière" },
       {
         name: "description",
         content:
-          "LicenceHub réunit les sujets d'examens et leurs corrections pour les étudiants de Licence 1, 2 et 3 en SEG, PC et AGRO. Demandez un accès, puis révisez.",
+          "CorrigéPro réunit les sujets d'examens et leurs corrections pour les étudiants de Licence 1, 2 et 3 en SEG, PC et AGRO. Demandez un accès, puis révisez.",
       },
-      { property: "og:title", content: "LicenceHub — Sujets et corrections par filière" },
+      { property: "og:title", content: "CorrigéPro — Sujets et corrections par filière" },
       {
         property: "og:description",
         content:
@@ -32,7 +32,7 @@ function Landing() {
           <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
             <GraduationCap className="size-5" />
           </span>
-          <span className="font-display text-lg font-bold">LicenceHub</span>
+          <span className="font-display text-lg font-bold">CorrigéPro</span>
         </Link>
         <nav className="flex items-center gap-2">
           <Button asChild variant="ghost">
@@ -54,7 +54,7 @@ function Landing() {
           Tous les sujets d'examens et leurs corrections, au même endroit.
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-          LicenceHub rassemble les épreuves des années passées pour les Licences 1, 2 et 3, classées
+          CorrigéPro rassemble les épreuves des années passées pour les Licences 1, 2 et 3, classées
           par filière et par niveau. Vous cherchez, vous consultez, vous téléchargez.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
@@ -122,7 +122,7 @@ function Landing() {
       </section>
 
       <footer className="mx-auto max-w-6xl px-5 py-10 text-sm text-muted-foreground">
-        LicenceHub — sujets et corrections pour les étudiants en licence.
+        CorrigéPro — sujets et corrections pour les étudiants en licence.
       </footer>
     </div>
   );

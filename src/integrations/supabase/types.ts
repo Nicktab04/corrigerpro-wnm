@@ -21,8 +21,10 @@ export type Database = {
           kind: Database["public"]["Enums"]["doc_kind"]
           level: number
           major: Database["public"]["Enums"]["major"]
+          resume_id: string | null
           storage_path: string
           subject: string
+          td_id: string | null
           title: string
           uploaded_by: string | null
           year: number
@@ -33,8 +35,10 @@ export type Database = {
           kind: Database["public"]["Enums"]["doc_kind"]
           level: number
           major: Database["public"]["Enums"]["major"]
+          resume_id?: string | null
           storage_path: string
           subject: string
+          td_id?: string | null
           title: string
           uploaded_by?: string | null
           year: number
@@ -45,13 +49,30 @@ export type Database = {
           kind?: Database["public"]["Enums"]["doc_kind"]
           level?: number
           major?: Database["public"]["Enums"]["major"]
+          resume_id?: string | null
           storage_path?: string
           subject?: string
+          td_id?: string | null
           title?: string
           uploaded_by?: string | null
           year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "documents_resume_id_fkey"
+            columns: ["resume_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_td_id_fkey"
+            columns: ["td_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -130,7 +151,7 @@ export type Database = {
     Enums: {
       access_status: "pending" | "approved" | "rejected"
       app_role: "admin" | "uploader"
-      doc_kind: "exam" | "correction"
+      doc_kind: "exam" | "correction" | "cours" | "td" | "resume"
       major: "SEG" | "PC" | "AGRO"
     }
     CompositeTypes: {
@@ -261,7 +282,7 @@ export const Constants = {
     Enums: {
       access_status: ["pending", "approved", "rejected"],
       app_role: ["admin", "uploader"],
-      doc_kind: ["exam", "correction"],
+      doc_kind: ["exam", "correction", "cours", "td", "resume"],
       major: ["SEG", "PC", "AGRO"],
     },
   },

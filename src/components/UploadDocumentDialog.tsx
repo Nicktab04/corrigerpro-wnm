@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -30,11 +30,8 @@ import {
   kindLabel,
   levelLabel,
   type DocKind,
-  type DocumentRow,
   type Major,
 } from "@/lib/licencehub";
-
-const NONE = "none";
 
 const schema = z.object({
   title: z.string().trim().min(3, "Titre trop court").max(140),
@@ -55,29 +52,45 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
   const [level, setLevel] = useState("");
   const [year, setYear] = useState(String(new Date().getFullYear() - 1));
   const [kind, setKind] = useState<DocKind | "">("");
-  const [tdId, setTdId] = useState<string>(NONE);
-  const [resumeId, setResumeId] = useState<string>(NONE);
   const [file, setFile] = useState<File | null>(null);
+  const [tdFile, setTdFile] = useState<File | null>(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
 
-  const { data: linkable } = useQuery({
-    queryKey: ["linkable-documents"],
-    enabled: open && kind === "cours",
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("documents")
-        .select("id, title, subject, kind, major, level, year")
-        .in("kind", ["td", "resume"])
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Pick<
-        DocumentRow,
-        "id" | "title" | "subject" | "kind" | "major" | "level" | "year"
-      >[];
-    },
-  });
+  function resetForm() {
+    setTitle("");
+    setSubject("");
+    setFile(null);
+    setTdFile(null);
+    setResumeFile(null);
+  }
 
-  const tdOptions = (linkable ?? []).filter((d) => d.kind === "td");
-  const resumeOptions = (linkable ?? []).filter((d) => d.kind === "resume");
+  async function uploadFile(target: File, m: Major, l: number) {
+    const safeName = target.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${m}/L${l}/${crypto.randomUUID()}-${safeName}`;
+    const { error } = await supabase.storage.from("documents").upload(path, target);
+    if (error) throw new Error(error.message);
+    return path;
+  }
+
+  async function insertDocument(values: {
+    title: string;
+    subject: string;
+    major: Major;
+    level: number;
+    year: number;
+    kind: DocKind;
+    storage_path: string;
+    td_id?: string | null;
+    resume_id?: string | null;
+  }) {
+    const { data, error } = await supabase
+      .from("documents")
+      .insert({ ...values, uploaded_by: userId })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    return data.id;
+  }
 
   async function submit() {
     const parsed = schema.safeParse({
@@ -93,40 +106,56 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
       return;
     }
     if (!file) {
-      toast.error("Choisissez un fichier");
+      toast.error("Choisissez le fichier principal");
       return;
     }
+    const base = parsed.data;
+    const isCourse = base.kind === "cours";
     setBusy(true);
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const path = `${parsed.data.major}/L${parsed.data.level}/${crypto.randomUUID()}-${safeName}`;
-    const upload = await supabase.storage.from("documents").upload(path, file);
-    if (upload.error) {
+    try {
+      let tdId: string | null = null;
+      let resumeId: string | null = null;
+
+      if (isCourse && tdFile) {
+        const path = await uploadFile(tdFile, base.major, base.level);
+        tdId = await insertDocument({
+          ...base,
+          kind: "td",
+          title: `TD — ${base.title}`,
+          storage_path: path,
+        });
+      }
+      if (isCourse && resumeFile) {
+        const path = await uploadFile(resumeFile, base.major, base.level);
+        resumeId = await insertDocument({
+          ...base,
+          kind: "resume",
+          title: `Résumé — ${base.title}`,
+          storage_path: path,
+        });
+      }
+
+      const mainPath = await uploadFile(file, base.major, base.level);
+      await insertDocument({
+        ...base,
+        storage_path: mainPath,
+        td_id: isCourse ? tdId : null,
+        resume_id: isCourse ? resumeId : null,
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ["documents"] });
+      await queryClient.invalidateQueries({ queryKey: ["linked-documents"] });
+      await queryClient.invalidateQueries({ queryKey: ["linkable-documents"] });
+      toast.success(
+        isCourse && (tdFile || resumeFile) ? "Cours et documents associés ajoutés" : "Document ajouté",
+      );
+      setOpen(false);
+      resetForm();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Envoi impossible");
+    } finally {
       setBusy(false);
-      toast.error(upload.error.message);
-      return;
     }
-    const isCourse = parsed.data.kind === "cours";
-    const { error } = await supabase.from("documents").insert({
-      ...parsed.data,
-      storage_path: path,
-      uploaded_by: userId,
-      td_id: isCourse && tdId !== NONE ? tdId : null,
-      resume_id: isCourse && resumeId !== NONE ? resumeId : null,
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    await queryClient.invalidateQueries({ queryKey: ["documents"] });
-    await queryClient.invalidateQueries({ queryKey: ["linkable-documents"] });
-    toast.success("Document ajouté");
-    setOpen(false);
-    setTitle("");
-    setSubject("");
-    setTdId(NONE);
-    setResumeId(NONE);
-    setFile(null);
   }
 
   return (
@@ -224,48 +253,10 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
             </div>
           </div>
 
-          {kind === "cours" ? (
-            <div className="grid gap-4 rounded-2xl border border-border bg-muted/40 p-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>TD associé (optionnel)</Label>
-                <Select value={tdId} onValueChange={setTdId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Aucun TD" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>Aucun TD</SelectItem>
-                    {tdOptions.map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {d.title} — {d.subject}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Résumé associé (optionnel)</Label>
-                <Select value={resumeId} onValueChange={setResumeId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Aucun résumé" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE}>Aucun résumé</SelectItem>
-                    {resumeOptions.map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {d.title} — {d.subject}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <p className="text-xs text-muted-foreground sm:col-span-2">
-                Déposez d'abord le TD et le résumé, puis rattachez-les ici au cours.
-              </p>
-            </div>
-          ) : null}
-
           <div className="space-y-2">
-            <Label htmlFor="doc-file">Fichier (PDF, image, document)</Label>
+            <Label htmlFor="doc-file">
+              {kind === "cours" ? "Fichier du Cours" : "Fichier (PDF, image, document)"}
+            </Label>
             <Input
               id="doc-file"
               type="file"
@@ -273,6 +264,33 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
           </div>
+
+          {kind === "cours" ? (
+            <div className="space-y-4 rounded-2xl border border-border bg-muted/40 p-4">
+              <div className="space-y-2">
+                <Label htmlFor="doc-td-file">Fichier du TD (optionnel)</Label>
+                <Input
+                  id="doc-td-file"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  onChange={(e) => setTdFile(e.target.files?.[0] ?? null)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="doc-resume-file">Fichier du Résumé (optionnel)</Label>
+                <Input
+                  id="doc-resume-file"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Le TD et le résumé déposés ici sont créés et rattachés automatiquement au cours.
+              </p>
+            </div>
+          ) : null}
+
           <Button className="w-full" onClick={submit} disabled={busy}>
             {busy && <Loader2 className="mr-2 size-4 animate-spin" />} Envoyer
           </Button>

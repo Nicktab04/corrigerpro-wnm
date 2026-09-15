@@ -1,5 +1,5 @@
 export type Major = "SEG" | "PC" | "AGRO";
-export type DocKind = "exam" | "correction";
+export type DocKind = "exam" | "correction" | "cours" | "td" | "resume";
 export type AccessStatus = "pending" | "approved" | "rejected";
 
 export interface Profile {
@@ -24,6 +24,8 @@ export interface DocumentRow {
   kind: DocKind;
   storage_path: string;
   created_at: string;
+  td_id?: string | null;
+  resume_id?: string | null;
 }
 
 export const MAJORS: {
@@ -72,4 +74,14 @@ export const majorStyle = (major: Major) => MAJORS.find((m) => m.key === major) 
 
 export const LEVELS = [1, 2, 3] as const;
 export const levelLabel = (level: number) => `Licence ${level}`;
-export const kindLabel = (kind: DocKind) => (kind === "exam" ? "Sujet" : "Correction");
+export const KIND_LABELS: Record<DocKind, string> = {
+  exam: "Sujet",
+  correction: "Correction",
+  cours: "Cours",
+  td: "TD",
+  resume: "Résumé",
+};
+
+export const DOC_KINDS: DocKind[] = ["exam", "correction", "cours", "td", "resume"];
+
+export const kindLabel = (kind: DocKind) => KIND_LABELS[kind] ?? kind;

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 import { DocumentViewerDialog } from "@/components/DocumentViewerDialog";
+import { LinkCourseDialog } from "@/components/LinkCourseDialog";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import {
   useSessionUser,
 } from "@/hooks/useLicenceHub";
 import {
+  DOC_KINDS,
   LEVELS,
   MAJORS,
   kindLabel,

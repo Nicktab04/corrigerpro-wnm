@@ -116,6 +116,27 @@ function Dashboard() {
     },
   });
 
+  const linkedIds = Array.from(
+    new Set(
+      (documents ?? []).flatMap((d) => [d.td_id, d.resume_id].filter(Boolean) as string[]),
+    ),
+  );
+
+  const { data: linkedDocs } = useQuery({
+    queryKey: ["linked-documents", linkedIds.join(",")],
+    enabled: Boolean(approved) && linkedIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("documents").select("*").in("id", linkedIds);
+      if (error) throw error;
+      return (data ?? []) as DocumentRow[];
+    },
+  });
+
+  const byId = new Map((linkedDocs ?? []).concat(documents ?? []).map((d) => [d.id, d]));
+  const linkedTd = (doc: DocumentRow) => (doc.td_id ? byId.get(doc.td_id) : undefined);
+  const linkedResume = (doc: DocumentRow) => (doc.resume_id ? byId.get(doc.resume_id) : undefined);
+
+
   async function view(doc: DocumentRow) {
     setViewerDocument(doc);
     setViewerUrl(null);
@@ -196,9 +217,12 @@ function Dashboard() {
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Sujets et corrections</SelectItem>
-            <SelectItem value="exam">Sujets</SelectItem>
-            <SelectItem value="correction">Corrections</SelectItem>
+            <SelectItem value="all">Tous les types</SelectItem>
+            {DOC_KINDS.map((k) => (
+              <SelectItem key={k} value={k}>
+                {kindLabel(k)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Input
@@ -239,8 +263,19 @@ function Dashboard() {
                   <p className="text-sm text-muted-foreground">{doc.subject}</p>
                   <div className="mt-4 flex flex-wrap gap-2 pt-1">
                     <Button size="sm" variant="outline" onClick={() => view(doc)}>
-                      <Eye className="mr-1.5 size-4" /> Consulter
+                      <Eye className="mr-1.5 size-4" />{" "}
+                      {doc.kind === "cours" ? "Voir le Cours" : "Consulter"}
                     </Button>
+                    {doc.kind === "cours" && linkedTd(doc) ? (
+                      <Button size="sm" variant="outline" onClick={() => view(linkedTd(doc)!)}>
+                        <Eye className="mr-1.5 size-4" /> Voir le TD
+                      </Button>
+                    ) : null}
+                    {doc.kind === "cours" && linkedResume(doc) ? (
+                      <Button size="sm" variant="outline" onClick={() => view(linkedResume(doc)!)}>
+                        <Eye className="mr-1.5 size-4" /> Voir le Résumé
+                      </Button>
+                    ) : null}
                     <Button size="sm" onClick={() => download(doc)} disabled={downloadingId === doc.id}>
                       {downloadingId === doc.id ? (
                         <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -249,6 +284,7 @@ function Dashboard() {
                       )}
                       Télécharger
                     </Button>
+                    {isAdmin && doc.kind === "cours" ? <LinkCourseDialog course={doc} /> : null}
                     {isAdmin ? (
                       <Button size="sm" variant="ghost" onClick={() => remove(doc)}>
                         <Trash2 className="size-4 text-destructive" />

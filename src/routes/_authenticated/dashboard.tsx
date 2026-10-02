@@ -112,7 +112,13 @@ function Dashboard() {
       if (search.trim()) query = query.or(`title.ilike.%${search.trim()}%,subject.ilike.%${search.trim()}%`);
       const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []) as DocumentRow[];
+      const rows = (data ?? []) as DocumentRow[];
+      // Les TD et Résumés rattachés à un cours ne s'affichent pas comme
+      // documents indépendants : ils restent accessibles via la carte du cours.
+      const linkedIds = new Set(
+        rows.flatMap((d) => [d.td_id, d.resume_id].filter(Boolean) as string[]),
+      );
+      return rows.filter((d) => !linkedIds.has(d.id));
     },
   });
 

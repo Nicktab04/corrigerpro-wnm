@@ -27,7 +27,7 @@ import {
   useSessionUser,
 } from "@/hooks/useLicenceHub";
 import {
-  DOC_KINDS,
+  FILTER_KINDS,
   LEVELS,
   MAJORS,
   kindLabel,
@@ -218,7 +218,7 @@ function Dashboard() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les types</SelectItem>
-            {DOC_KINDS.map((k) => (
+            {FILTER_KINDS.map((k) => (
               <SelectItem key={k} value={k}>
                 {kindLabel(k)}
               </SelectItem>

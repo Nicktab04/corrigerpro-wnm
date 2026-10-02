@@ -115,8 +115,13 @@ function Dashboard() {
       const rows = (data ?? []) as DocumentRow[];
       // Les TD et Résumés rattachés à un cours ne s'affichent pas comme
       // documents indépendants : ils restent accessibles via la carte du cours.
+      const { data: links, error: linksError } = await supabase
+        .from("documents")
+        .select("td_id, resume_id")
+        .or("td_id.not.is.null,resume_id.not.is.null");
+      if (linksError) throw linksError;
       const linkedIds = new Set(
-        rows.flatMap((d) => [d.td_id, d.resume_id].filter(Boolean) as string[]),
+        (links ?? []).flatMap((d) => [d.td_id, d.resume_id].filter(Boolean) as string[]),
       );
       return rows.filter((d) => !linkedIds.has(d.id));
     },

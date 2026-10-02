@@ -84,4 +84,8 @@ export const KIND_LABELS: Record<DocKind, string> = {
 
 export const DOC_KINDS: DocKind[] = ["exam", "correction", "cours", "td", "resume"];
 
+/** Types proposés dans les filtres : TD et Résumé ne sont jamais proposés seuls,
+ *  ils restent accessibles depuis le cours auquel ils sont rattachés. */
+export const FILTER_KINDS: DocKind[] = ["exam", "correction", "cours"];
+
 export const kindLabel = (kind: DocKind) => KIND_LABELS[kind] ?? kind;

@@ -74,8 +74,7 @@ export function DocumentViewerDialog({
 
   const kind = fileKind(document.storage_path);
   const pageWidth = viewportWidth > 0 ? Math.floor(viewportWidth * pdfZoom) : undefined;
-  const imageZoomClass =
-    imageZoom === 2 ? "scale-200" : imageZoom === 1.5 ? "scale-150" : "scale-100";
+  const imageWidth = viewportWidth > 0 ? Math.floor(viewportWidth * imageZoom) : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,7 +187,10 @@ export function DocumentViewerDialog({
             <div />
           )}
 
-          <div ref={viewportRef} className="min-h-0 min-w-0 overflow-auto overscroll-contain">
+          <div
+            ref={viewportRef}
+            className="min-h-0 min-w-0 touch-pan-x touch-pan-y overflow-x-auto overflow-y-auto overscroll-contain"
+          >
             {!url ? (
               <div className="grid h-full place-items-center">
                 <Loader2 className="size-7 animate-spin text-muted-foreground" />
@@ -210,20 +212,21 @@ export function DocumentViewerDialog({
                     Impossible d’afficher ce PDF. Vous pouvez toujours le télécharger.
                   </div>
                 }
-                className="flex min-h-full justify-center p-3"
+                className="flex min-h-full w-max min-w-full items-start justify-center p-3"
               >
-                <div className="relative w-fit max-w-full overflow-hidden">
+                <div className="relative w-fit max-w-none shrink-0 overflow-visible">
                   <Page pageNumber={pageNumber} {...(pageWidth ? { width: pageWidth } : {})} />
                   {watermark ? <WatermarkOverlay text={watermark} /> : null}
                 </div>
               </Document>
             ) : kind === "image" ? (
-              <div className="flex min-h-full min-w-full items-start justify-center p-2 sm:p-4">
+              <div className="flex min-h-full w-max min-w-full items-start justify-center p-2 sm:p-4">
                 <div
-                  className={`relative w-fit max-w-full origin-top overflow-hidden transition-transform ${imageZoomClass}`}
+                  className="relative max-w-none shrink-0 overflow-visible"
+                  {...(imageWidth ? { style: { width: imageWidth } } : {})}
                   onDoubleClick={() => setImageZoom((zoom) => (zoom === 1 ? 2 : 1))}
                 >
-                  <img src={url} alt={document.title} className="block h-auto max-w-full object-contain" />
+                  <img src={url} alt={document.title} className="block h-auto w-full max-w-none object-contain" />
                   {watermark ? <WatermarkOverlay text={watermark} /> : null}
                 </div>
               </div>

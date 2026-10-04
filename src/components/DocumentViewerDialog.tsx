@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Download, FileWarning, Loader2, Minus, Plus, RotateCcw, X } from "lucide-react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -45,36 +45,46 @@ export function DocumentViewerDialog({
   onDownload: () => void;
   downloading: boolean;
 }) {
-  const viewportRef = useRef<HTMLDivElement>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfZoom, setPdfZoom] = useState(1);
   const [imageZoom, setImageZoom] = useState(1);
+  const [imageNaturalWidth, setImageNaturalWidth] = useState(0);
 
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const width = entry?.contentRect.width ?? 0;
-      setViewportWidth(Math.max(0, width - 24));
-    });
-    observer.observe(viewport);
+  // Mesure la largeur disponible dès que la zone d'affichage est montée,
+  // indépendamment du moment où le dialogue s'ouvre.
+  const attachViewport = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const update = () => setViewportWidth(Math.max(0, node.clientWidth - 24));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
     return () => observer.disconnect();
-  }, [open]);
+  }, []);
 
   useEffect(() => {
     setPageNumber(1);
     setNumPages(0);
     setPdfZoom(1);
     setImageZoom(1);
+    setImageNaturalWidth(0);
   }, [document?.id]);
 
   if (!document) return null;
 
   const kind = fileKind(document.storage_path);
-  const pageWidth = viewportWidth > 0 ? Math.floor(viewportWidth * pdfZoom) : undefined;
-  const imageWidth = viewportWidth > 0 ? Math.floor(viewportWidth * imageZoom) : undefined;
+  // Zoom par défaut : toute la largeur visible, sans jamais agrandir le document
+  // au-delà d'une taille de lecture confortable (un PDF ne dépasse pas ~800 px).
+  const pdfBaseWidth = viewportWidth > 0 ? Math.min(viewportWidth, 800) : 0;
+  const pageWidth = pdfBaseWidth > 0 ? Math.floor(pdfBaseWidth * pdfZoom) : undefined;
+  const imageBaseWidth =
+    viewportWidth > 0
+      ? imageNaturalWidth > 0
+        ? Math.min(viewportWidth, imageNaturalWidth)
+        : viewportWidth
+      : 0;
+  const imageWidth = imageBaseWidth > 0 ? Math.floor(imageBaseWidth * imageZoom) : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,7 +198,7 @@ export function DocumentViewerDialog({
           )}
 
           <div
-            ref={viewportRef}
+            ref={attachViewport}
             className="min-h-0 min-w-0 touch-pan-x touch-pan-y overflow-x-auto overflow-y-auto overscroll-contain"
           >
             {!url ? (
@@ -226,7 +236,12 @@ export function DocumentViewerDialog({
                   {...(imageWidth ? { style: { width: imageWidth } } : {})}
                   onDoubleClick={() => setImageZoom((zoom) => (zoom === 1 ? 2 : 1))}
                 >
-                  <img src={url} alt={document.title} className="block h-auto w-full max-w-none object-contain" />
+                  <img
+                    src={url}
+                    alt={document.title}
+                    onLoad={(event) => setImageNaturalWidth(event.currentTarget.naturalWidth)}
+                    className="block h-auto w-full max-w-none object-contain"
+                  />
                   {watermark ? <WatermarkOverlay text={watermark} /> : null}
                 </div>
               </div>

@@ -291,6 +291,11 @@ function Dashboard() {
                   </div>
                   <h2 className="mt-3 text-base font-bold">{doc.title}</h2>
                   <p className="text-sm text-muted-foreground">{doc.subject}</p>
+                  {locked(doc) ? (
+                    <div className="mt-4 flex items-center gap-2 rounded-2xl border border-dashed border-border bg-muted/50 p-3 text-sm text-muted-foreground">
+                      <Lock className="size-4 shrink-0" /> {LOCKED_MESSAGE}
+                    </div>
+                  ) : (
                   <div className="mt-4 flex flex-wrap gap-2 pt-1">
                     <Button size="sm" variant="outline" onClick={() => view(doc)}>
                       <Eye className="mr-1.5 size-4" />{" "}
@@ -303,7 +308,12 @@ function Dashboard() {
                     ) : null}
                     {doc.kind === "cours" && linkedResume(doc) ? (
                       <Button size="sm" variant="outline" onClick={() => view(linkedResume(doc)!)}>
-                        <Eye className="mr-1.5 size-4" /> Voir le Résumé
+                        {locked(linkedResume(doc)!) ? (
+                          <Lock className="mr-1.5 size-4" />
+                        ) : (
+                          <Eye className="mr-1.5 size-4" />
+                        )}{" "}
+                        Voir le Résumé
                       </Button>
                     ) : null}
                     <Button size="sm" onClick={() => download(doc)} disabled={downloadingId === doc.id}>
@@ -321,8 +331,17 @@ function Dashboard() {
                       </Button>
                     ) : null}
                   </div>
-                </div>
-              </article>
+                  )}
+                  {isAdmin && isPremiumKind(doc.kind) ? (
+                    <FreeToggle checked={Boolean(doc.is_free)} onChange={(v) => toggleFree(doc, v)} />
+                  ) : null}
+                  {isAdmin && doc.kind === "cours" && linkedResume(doc) ? (
+                    <FreeToggle
+                      label="Rendre le Résumé gratuit"
+                      checked={Boolean(linkedResume(doc)!.is_free)}
+                      onChange={(v) => toggleFree(linkedResume(doc)!, v)}
+                    />
+                  ) : null}
             );
           })}
         </div>

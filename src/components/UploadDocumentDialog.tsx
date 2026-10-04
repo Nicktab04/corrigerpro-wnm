@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -55,6 +56,8 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
   const [file, setFile] = useState<File | null>(null);
   const [tdFile, setTdFile] = useState<File | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isFree, setIsFree] = useState(false);
+  const [resumeFree, setResumeFree] = useState(false);
 
   function resetForm() {
     setTitle("");
@@ -62,6 +65,8 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
     setFile(null);
     setTdFile(null);
     setResumeFile(null);
+    setIsFree(false);
+    setResumeFree(false);
   }
 
   async function uploadFile(target: File, m: Major, l: number) {
@@ -82,6 +87,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
     storage_path: string;
     td_id?: string | null;
     resume_id?: string | null;
+    is_free?: boolean;
   }) {
     const { data, error } = await supabase
       .from("documents")
@@ -132,6 +138,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
           kind: "resume",
           title: `Résumé — ${base.title}`,
           storage_path: path,
+          is_free: resumeFree,
         });
       }
 
@@ -141,6 +148,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
         storage_path: mainPath,
         td_id: isCourse ? tdId : null,
         resume_id: isCourse ? resumeId : null,
+        is_free: base.kind === "correction" || base.kind === "resume" ? isFree : false,
       });
 
       await queryClient.invalidateQueries({ queryKey: ["documents"] });
@@ -289,6 +297,19 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
                 Le TD et le résumé déposés ici sont créés et rattachés automatiquement au cours.
               </p>
             </div>
+          ) : null}
+
+          {kind === "correction" || kind === "resume" ? (
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox checked={isFree} onCheckedChange={(v) => setIsFree(v === true)} />
+              Rendre ce document gratuit
+            </label>
+          ) : null}
+          {kind === "cours" && resumeFile ? (
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox checked={resumeFree} onCheckedChange={(v) => setResumeFree(v === true)} />
+              Rendre le Résumé gratuit
+            </label>
           ) : null}
 
           <Button className="w-full" onClick={submit} disabled={busy}>

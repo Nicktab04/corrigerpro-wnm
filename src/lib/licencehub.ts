@@ -11,6 +11,7 @@ export interface Profile {
   major: Major;
   level: number;
   status: AccessStatus;
+  plan?: "free" | "paid";
   created_at: string;
 }
 
@@ -26,7 +27,14 @@ export interface DocumentRow {
   created_at: string;
   td_id?: string | null;
   resume_id?: string | null;
+  is_free?: boolean;
 }
+
+/** Corrections et Résumés sont réservés aux membres payants, sauf s'ils sont marqués gratuits. */
+export const isPremiumKind = (kind: DocKind) => kind === "correction" || kind === "resume";
+export const isLocked = (doc: DocumentRow, opts: { isAdmin: boolean; plan?: string | undefined }) =>
+  !opts.isAdmin && isPremiumKind(doc.kind) && !doc.is_free && opts.plan !== "paid";
+export const LOCKED_MESSAGE = "Contenu réservé aux membres payants";
 
 export const MAJORS: {
   key: Major;

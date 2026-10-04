@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Download, Eye, FileText, Loader2, Trash2 } from "lucide-react";
+import { Download, Eye, FileText, Loader2, Lock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -29,7 +29,10 @@ import {
 import {
   FILTER_KINDS,
   LEVELS,
+  LOCKED_MESSAGE,
   MAJORS,
+  isLocked,
+  isPremiumKind,
   kindLabel,
   levelLabel,
   majorStyle,
@@ -37,6 +40,24 @@ import {
   type DocumentRow,
   type Major,
 } from "@/lib/licencehub";
+import { Checkbox } from "@/components/ui/checkbox";
+
+function FreeToggle({
+  checked,
+  onChange,
+  label = "Rendre ce document gratuit",
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label?: string;
+}) {
+  return (
+    <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+      <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} />
+      {label}
+    </label>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -146,9 +167,24 @@ function Dashboard() {
   const byId = new Map((linkedDocs ?? []).concat(documents ?? []).map((d) => [d.id, d]));
   const linkedTd = (doc: DocumentRow) => (doc.td_id ? byId.get(doc.td_id) : undefined);
   const linkedResume = (doc: DocumentRow) => (doc.resume_id ? byId.get(doc.resume_id) : undefined);
+  const locked = (doc: DocumentRow) => isLocked(doc, { isAdmin, plan: profile?.plan });
 
+  async function toggleFree(doc: DocumentRow, value: boolean) {
+    const { error } = await supabase.from("documents").update({ is_free: value }).eq("id", doc.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["documents"] });
+    await queryClient.invalidateQueries({ queryKey: ["linked-documents"] });
+    toast.success(value ? "Document rendu gratuit" : "Document réservé aux payants");
+  }
 
   async function view(doc: DocumentRow) {
+    if (locked(doc)) {
+      toast.error(LOCKED_MESSAGE);
+      return;
+    }
     setViewerDocument(doc);
     setViewerUrl(null);
     try {
@@ -161,6 +197,10 @@ function Dashboard() {
   }
 
   async function download(doc: DocumentRow) {
+    if (locked(doc)) {
+      toast.error(LOCKED_MESSAGE);
+      return;
+    }
     setDownloadingId(doc.id);
     try {
       await openDocumentInNewTab(doc.storage_path);
@@ -272,6 +312,11 @@ function Dashboard() {
                   </div>
                   <h2 className="mt-3 text-base font-bold">{doc.title}</h2>
                   <p className="text-sm text-muted-foreground">{doc.subject}</p>
+                  {locked(doc) ? (
+                    <div className="mt-4 flex items-center gap-2 rounded-2xl border border-dashed border-border bg-muted/50 p-3 text-sm text-muted-foreground">
+                      <Lock className="size-4 shrink-0" /> {LOCKED_MESSAGE}
+                    </div>
+                  ) : (
                   <div className="mt-4 flex flex-wrap gap-2 pt-1">
                     <Button size="sm" variant="outline" onClick={() => view(doc)}>
                       <Eye className="mr-1.5 size-4" />{" "}
@@ -284,7 +329,12 @@ function Dashboard() {
                     ) : null}
                     {doc.kind === "cours" && linkedResume(doc) ? (
                       <Button size="sm" variant="outline" onClick={() => view(linkedResume(doc)!)}>
-                        <Eye className="mr-1.5 size-4" /> Voir le Résumé
+                        {locked(linkedResume(doc)!) ? (
+                          <Lock className="mr-1.5 size-4" />
+                        ) : (
+                          <Eye className="mr-1.5 size-4" />
+                        )}{" "}
+                        Voir le Résumé
                       </Button>
                     ) : null}
                     <Button size="sm" onClick={() => download(doc)} disabled={downloadingId === doc.id}>
@@ -302,6 +352,17 @@ function Dashboard() {
                       </Button>
                     ) : null}
                   </div>
+                  )}
+                  {isAdmin && isPremiumKind(doc.kind) ? (
+                    <FreeToggle checked={Boolean(doc.is_free)} onChange={(v) => toggleFree(doc, v)} />
+                  ) : null}
+                  {isAdmin && doc.kind === "cours" && linkedResume(doc) ? (
+                    <FreeToggle
+                      label="Rendre le Résumé gratuit"
+                      checked={Boolean(linkedResume(doc)!.is_free)}
+                      onChange={(v) => toggleFree(linkedResume(doc)!, v)}
+                    />
+                  ) : null}
                 </div>
               </article>
             );

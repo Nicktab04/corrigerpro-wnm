@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_free: boolean
           kind: Database["public"]["Enums"]["doc_kind"]
           level: number
           major: Database["public"]["Enums"]["major"]
@@ -32,6 +33,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_free?: boolean
           kind: Database["public"]["Enums"]["doc_kind"]
           level: number
           major: Database["public"]["Enums"]["major"]
@@ -46,6 +48,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_free?: boolean
           kind?: Database["public"]["Enums"]["doc_kind"]
           level?: number
           major?: Database["public"]["Enums"]["major"]
@@ -82,6 +85,7 @@ export type Database = {
           level: number
           major: Database["public"]["Enums"]["major"]
           nom: string
+          plan: Database["public"]["Enums"]["access_plan"]
           prenom: string
           status: Database["public"]["Enums"]["access_status"]
           updated_at: string
@@ -94,6 +98,7 @@ export type Database = {
           level: number
           major: Database["public"]["Enums"]["major"]
           nom: string
+          plan?: Database["public"]["Enums"]["access_plan"]
           prenom: string
           status?: Database["public"]["Enums"]["access_status"]
           updated_at?: string
@@ -106,6 +111,7 @@ export type Database = {
           level?: number
           major?: Database["public"]["Enums"]["major"]
           nom?: string
+          plan?: Database["public"]["Enums"]["access_plan"]
           prenom?: string
           status?: Database["public"]["Enums"]["access_status"]
           updated_at?: string
@@ -139,6 +145,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_file: {
+        Args: { _path: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -149,6 +159,7 @@ export type Database = {
       is_approved: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
+      access_plan: "free" | "paid"
       access_status: "pending" | "approved" | "rejected"
       app_role: "admin" | "uploader"
       doc_kind: "exam" | "correction" | "cours" | "td" | "resume"
@@ -280,6 +291,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_plan: ["free", "paid"],
       access_status: ["pending", "approved", "rejected"],
       app_role: ["admin", "uploader"],
       doc_kind: ["exam", "correction", "cours", "td", "resume"],

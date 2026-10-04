@@ -74,7 +74,7 @@ export function DocumentViewerDialog({
   if (!document) return null;
 
   const kind = fileKind(document.storage_path);
-  // Zoom par défaut : tout la largeur visible, sans jamais agrandir le document
+  // Zoom par défaut : toute la largeur visible, sans jamais agrandir le document
   // au-delà d'une taille de lecture confortable (un PDF ne dépasse pas ~800 px).
   const pdfBaseWidth = viewportWidth > 0 ? Math.min(viewportWidth, 800) : 0;
   const pageWidth = pdfBaseWidth > 0 ? Math.floor(pdfBaseWidth * pdfZoom) : undefined;
@@ -198,7 +198,7 @@ export function DocumentViewerDialog({
           )}
 
           <div
-            ref={viewportRef}
+            ref={attachViewport}
             className="min-h-0 min-w-0 touch-pan-x touch-pan-y overflow-x-auto overflow-y-auto overscroll-contain"
           >
             {!url ? (
@@ -236,7 +236,12 @@ export function DocumentViewerDialog({
                   {...(imageWidth ? { style: { width: imageWidth } } : {})}
                   onDoubleClick={() => setImageZoom((zoom) => (zoom === 1 ? 2 : 1))}
                 >
-                  <img src={url} alt={document.title} className="block h-auto w-full max-w-none object-contain" />
+                  <img
+                    src={url}
+                    alt={document.title}
+                    onLoad={(event) => setImageNaturalWidth(event.currentTarget.naturalWidth)}
+                    className="block h-auto w-full max-w-none object-contain"
+                  />
                   {watermark ? <WatermarkOverlay text={watermark} /> : null}
                 </div>
               </div>

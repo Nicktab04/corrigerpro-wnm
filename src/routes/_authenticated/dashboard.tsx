@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Download, Eye, FileText, Loader2, Trash2 } from "lucide-react";
+import { Download, Eye, FileText, Loader2, Lock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -29,7 +29,10 @@ import {
 import {
   FILTER_KINDS,
   LEVELS,
+  LOCKED_MESSAGE,
   MAJORS,
+  isLocked,
+  isPremiumKind,
   kindLabel,
   levelLabel,
   majorStyle,
@@ -37,6 +40,24 @@ import {
   type DocumentRow,
   type Major,
 } from "@/lib/licencehub";
+import { Checkbox } from "@/components/ui/checkbox";
+
+function FreeToggle({
+  checked,
+  onChange,
+  label = "Rendre ce document gratuit",
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label?: string;
+}) {
+  return (
+    <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+      <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} />
+      {label}
+    </label>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -342,6 +363,8 @@ function Dashboard() {
                       onChange={(v) => toggleFree(linkedResume(doc)!, v)}
                     />
                   ) : null}
+                </div>
+              </article>
             );
           })}
         </div>

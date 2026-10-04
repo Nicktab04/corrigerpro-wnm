@@ -74,8 +74,17 @@ export function DocumentViewerDialog({
   if (!document) return null;
 
   const kind = fileKind(document.storage_path);
-  const pageWidth = viewportWidth > 0 ? Math.floor(viewportWidth * pdfZoom) : undefined;
-  const imageWidth = viewportWidth > 0 ? Math.floor(viewportWidth * imageZoom) : undefined;
+  // Zoom par défaut : tout la largeur visible, sans jamais agrandir le document
+  // au-delà d'une taille de lecture confortable (un PDF ne dépasse pas ~800 px).
+  const pdfBaseWidth = viewportWidth > 0 ? Math.min(viewportWidth, 800) : 0;
+  const pageWidth = pdfBaseWidth > 0 ? Math.floor(pdfBaseWidth * pdfZoom) : undefined;
+  const imageBaseWidth =
+    viewportWidth > 0
+      ? imageNaturalWidth > 0
+        ? Math.min(viewportWidth, imageNaturalWidth)
+        : viewportWidth
+      : 0;
+  const imageWidth = imageBaseWidth > 0 ? Math.floor(imageBaseWidth * imageZoom) : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

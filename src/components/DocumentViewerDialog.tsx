@@ -45,29 +45,30 @@ export function DocumentViewerDialog({
   onDownload: () => void;
   downloading: boolean;
 }) {
-  const viewportRef = useRef<HTMLDivElement>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfZoom, setPdfZoom] = useState(1);
   const [imageZoom, setImageZoom] = useState(1);
+  const [imageNaturalWidth, setImageNaturalWidth] = useState(0);
 
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const width = entry?.contentRect.width ?? 0;
-      setViewportWidth(Math.max(0, width - 24));
-    });
-    observer.observe(viewport);
+  // Mesure la largeur disponible dès que la zone d'affichage est montée,
+  // indépendamment du moment où le dialogue s'ouvre.
+  const attachViewport = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const update = () => setViewportWidth(Math.max(0, node.clientWidth - 24));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
     return () => observer.disconnect();
-  }, [open]);
+  }, []);
 
   useEffect(() => {
     setPageNumber(1);
     setNumPages(0);
     setPdfZoom(1);
     setImageZoom(1);
+    setImageNaturalWidth(0);
   }, [document?.id]);
 
   if (!document) return null;

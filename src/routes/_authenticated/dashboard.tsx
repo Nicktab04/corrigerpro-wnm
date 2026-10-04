@@ -146,9 +146,24 @@ function Dashboard() {
   const byId = new Map((linkedDocs ?? []).concat(documents ?? []).map((d) => [d.id, d]));
   const linkedTd = (doc: DocumentRow) => (doc.td_id ? byId.get(doc.td_id) : undefined);
   const linkedResume = (doc: DocumentRow) => (doc.resume_id ? byId.get(doc.resume_id) : undefined);
+  const locked = (doc: DocumentRow) => isLocked(doc, { isAdmin, plan: profile?.plan });
 
+  async function toggleFree(doc: DocumentRow, value: boolean) {
+    const { error } = await supabase.from("documents").update({ is_free: value }).eq("id", doc.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["documents"] });
+    await queryClient.invalidateQueries({ queryKey: ["linked-documents"] });
+    toast.success(value ? "Document rendu gratuit" : "Document réservé aux payants");
+  }
 
   async function view(doc: DocumentRow) {
+    if (locked(doc)) {
+      toast.error(LOCKED_MESSAGE);
+      return;
+    }
     setViewerDocument(doc);
     setViewerUrl(null);
     try {
@@ -161,6 +176,10 @@ function Dashboard() {
   }
 
   async function download(doc: DocumentRow) {
+    if (locked(doc)) {
+      toast.error(LOCKED_MESSAGE);
+      return;
+    }
     setDownloadingId(doc.id);
     try {
       await openDocumentInNewTab(doc.storage_path);

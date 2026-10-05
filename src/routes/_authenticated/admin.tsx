@@ -76,6 +76,16 @@ function AdminPage() {
     toast.success(status === "approved" ? "Accès accordé" : "Demande refusée");
   }
 
+  async function setPlan(id: string, plan: "free" | "paid") {
+    const { error } = await supabase.from("profiles").update({ plan }).eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+    toast.success(plan === "paid" ? "Statut payant activé" : "Statut gratuit");
+  }
+
   async function toggleUploader(id: string, enabled: boolean) {
     const { error } = enabled
       ? await supabase.from("user_roles").insert({ user_id: id, role: "uploader" })
@@ -151,6 +161,15 @@ function AdminPage() {
                         <ShieldOff className="size-3.5" /> Dépôt désactivé
                       </span>
                     )}
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Switch
+                      checked={p.plan === "paid"}
+                      onCheckedChange={(v) => setPlan(p.id, v ? "paid" : "free")}
+                    />
+                    <span className={p.plan === "paid" ? "text-foreground" : ""}>
+                      {p.plan === "paid" ? "Payant" : "Gratuit"}
+                    </span>
                   </label>
                   <Button size="sm" variant="ghost" onClick={() => setStatus(p.id, "rejected")}>
                     Révoquer l'accès

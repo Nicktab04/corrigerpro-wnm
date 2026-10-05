@@ -389,6 +389,12 @@ function Dashboard() {
         }}
         downloading={Boolean(viewerDocument && downloadingId === viewerDocument.id)}
       />
+      <UnlockDialog
+        document={unlockDocument}
+        onOpenChange={(o) => {
+          if (!o) setUnlockDocument(null);
+        }}
+      />
     </AppShell>
   );
 }

@@ -8,6 +8,7 @@ import { AppShell } from "@/components/AppShell";
 import { DocumentViewerDialog } from "@/components/DocumentViewerDialog";
 import { LinkCourseDialog } from "@/components/LinkCourseDialog";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
+import { UnlockButton, UnlockDialog } from "@/components/UnlockDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +96,7 @@ function Dashboard() {
   const [viewerDocument, setViewerDocument] = useState<DocumentRow | null>(null);
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [unlockDocument, setUnlockDocument] = useState<DocumentRow | null>(null);
 
   useEffect(() => {
     if (profileLoading || !rolesResolved) return;
@@ -182,7 +184,7 @@ function Dashboard() {
 
   async function view(doc: DocumentRow) {
     if (locked(doc)) {
-      toast.error(LOCKED_MESSAGE);
+      setUnlockDocument(doc);
       return;
     }
     setViewerDocument(doc);
@@ -313,8 +315,8 @@ function Dashboard() {
                   <h2 className="mt-3 text-base font-bold">{doc.title}</h2>
                   <p className="text-sm text-muted-foreground">{doc.subject}</p>
                   {locked(doc) ? (
-                    <div className="mt-4 flex items-center gap-2 rounded-2xl border border-dashed border-border bg-muted/50 p-3 text-sm text-muted-foreground">
-                      <Lock className="size-4 shrink-0" /> {LOCKED_MESSAGE}
+                    <div className="mt-4 flex flex-wrap gap-2 pt-1">
+                      <UnlockButton onClick={() => setUnlockDocument(doc)} />
                     </div>
                   ) : (
                   <div className="mt-4 flex flex-wrap gap-2 pt-1">
@@ -328,14 +330,16 @@ function Dashboard() {
                       </Button>
                     ) : null}
                     {doc.kind === "cours" && linkedResume(doc) ? (
-                      <Button size="sm" variant="outline" onClick={() => view(linkedResume(doc)!)}>
-                        {locked(linkedResume(doc)!) ? (
-                          <Lock className="mr-1.5 size-4" />
-                        ) : (
-                          <Eye className="mr-1.5 size-4" />
-                        )}{" "}
-                        Voir le Résumé
-                      </Button>
+                      locked(linkedResume(doc)!) ? (
+                        <UnlockButton
+                          label="Débloquer le Résumé"
+                          onClick={() => setUnlockDocument(linkedResume(doc)!)}
+                        />
+                      ) : (
+                        <Button size="sm" variant="outline" onClick={() => view(linkedResume(doc)!)}>
+                          <Eye className="mr-1.5 size-4" /> Voir le Résumé
+                        </Button>
+                      )
                     ) : null}
                     <Button size="sm" onClick={() => download(doc)} disabled={downloadingId === doc.id}>
                       {downloadingId === doc.id ? (

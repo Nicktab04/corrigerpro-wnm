@@ -59,6 +59,24 @@ export function useIsAdmin(userId: string | undefined) {
   });
 }
 
+export function usePricing() {
+  return useQuery({
+    queryKey: ["pricing"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("unit_price, subscription_price")
+        .eq("id", 1)
+        .maybeSingle();
+      if (error) throw error;
+      return data ?? { unit_price: 0, subscription_price: 0 };
+    },
+  });
+}
+
+export const formatFcfa = (amount: number) =>
+  `${new Intl.NumberFormat("fr-FR").format(amount)} FCFA`;
+
 
 
 

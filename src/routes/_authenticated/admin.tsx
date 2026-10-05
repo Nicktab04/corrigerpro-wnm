@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
+import { PricingSettings } from "@/components/PricingSettings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -113,6 +114,9 @@ function AdminPage() {
         </div>
         {user ? <UploadDocumentDialog userId={user.id} /> : null}
       </div>
+
+      {isAdmin ? <PricingSettings /> : null}
+
 
       {isLoading ? (
         <Loader2 className="mt-10 size-5 animate-spin text-muted-foreground" />

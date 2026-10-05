@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          id: number
+          subscription_price: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          subscription_price?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          subscription_price?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string

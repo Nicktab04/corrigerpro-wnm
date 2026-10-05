@@ -30,7 +30,6 @@ import {
 import {
   FILTER_KINDS,
   LEVELS,
-  LOCKED_MESSAGE,
   MAJORS,
   isLocked,
   isPremiumKind,
@@ -200,7 +199,7 @@ function Dashboard() {
 
   async function download(doc: DocumentRow) {
     if (locked(doc)) {
-      toast.error(LOCKED_MESSAGE);
+      setUnlockDocument(doc);
       return;
     }
     setDownloadingId(doc.id);

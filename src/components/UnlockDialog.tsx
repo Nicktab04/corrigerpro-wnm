@@ -1,5 +1,6 @@
 import { Crown, FileLock2, Lock } from "lucide-react";
-import { toast } from "sonner";
+
+const WAVE_PAYMENT_URL = "https://pay.wave.com/m/M_ci_vd5eYWll6jXx/c/ci/";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +46,7 @@ export function UnlockDialog({
 }) {
   const { data: pricing } = usePricing();
   const price = useDocumentPrice(document);
-  const soon = () => toast.info("Paiement bientôt disponible");
+  const pay = () => window.open(WAVE_PAYMENT_URL, "_blank", "noopener,noreferrer");
 
   return (
     <Dialog open={Boolean(document)} onOpenChange={onOpenChange}>
@@ -57,7 +58,7 @@ export function UnlockDialog({
         <div className="grid gap-3">
           <button
             type="button"
-            onClick={soon}
+            onClick={pay}
             className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:bg-muted"
           >
             <FileLock2 className="mt-0.5 size-5 shrink-0 text-primary" />
@@ -71,7 +72,7 @@ export function UnlockDialog({
           </button>
           <button
             type="button"
-            onClick={soon}
+            onClick={pay}
             className="flex items-start gap-3 rounded-2xl border-2 border-primary bg-card p-4 text-left transition-colors hover:bg-muted"
           >
             <Crown className="mt-0.5 size-5 shrink-0 text-primary" />
@@ -86,6 +87,10 @@ export function UnlockDialog({
             </span>
           </button>
         </div>
+        <p className="text-center text-xs text-muted-foreground">
+          Vous serez redirigé vers Wave pour payer. Après votre paiement, l'administrateur
+          valide votre accès manuellement.
+        </p>
       </DialogContent>
     </Dialog>
   );

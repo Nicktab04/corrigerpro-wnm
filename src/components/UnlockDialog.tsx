@@ -46,7 +46,7 @@ export function UnlockDialog({
 }) {
   const { data: pricing } = usePricing();
   const price = useDocumentPrice(document);
-  const soon = () => toast.info("Paiement bientôt disponible");
+  const pay = () => window.open(WAVE_PAYMENT_URL, "_blank", "noopener,noreferrer");
 
   return (
     <Dialog open={Boolean(document)} onOpenChange={onOpenChange}>

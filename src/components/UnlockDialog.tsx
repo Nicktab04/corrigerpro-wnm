@@ -72,7 +72,7 @@ export function UnlockDialog({
           </button>
           <button
             type="button"
-            onClick={soon}
+            onClick={pay}
             className="flex items-start gap-3 rounded-2xl border-2 border-primary bg-card p-4 text-left transition-colors hover:bg-muted"
           >
             <Crown className="mt-0.5 size-5 shrink-0 text-primary" />

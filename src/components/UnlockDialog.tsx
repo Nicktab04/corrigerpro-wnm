@@ -87,6 +87,10 @@ export function UnlockDialog({
             </span>
           </button>
         </div>
+        <p className="text-center text-xs text-muted-foreground">
+          Vous serez redirigé vers Wave pour payer. Après votre paiement, l'administrateur
+          valide votre accès manuellement.
+        </p>
       </DialogContent>
     </Dialog>
   );

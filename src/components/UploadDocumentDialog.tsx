@@ -57,6 +57,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
   const [tdFile, setTdFile] = useState<File | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isFree, setIsFree] = useState(false);
+  const [price, setPrice] = useState("");
   const [resumeFree, setResumeFree] = useState(false);
 
   function resetForm() {
@@ -88,6 +89,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
     td_id?: string | null;
     resume_id?: string | null;
     is_free?: boolean;
+    price?: number | null;
   }) {
     const { data, error } = await supabase
       .from("documents")

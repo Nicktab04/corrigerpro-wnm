@@ -28,6 +28,7 @@ export interface DocumentRow {
   td_id?: string | null;
   resume_id?: string | null;
   is_free?: boolean;
+  price?: number | null;
 }
 
 /** Corrections et Résumés sont réservés aux membres payants, sauf s'ils sont marqués gratuits. */

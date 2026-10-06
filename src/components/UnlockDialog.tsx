@@ -12,18 +12,26 @@ import {
 import { formatFcfa, usePricing } from "@/hooks/useLicenceHub";
 import type { DocumentRow } from "@/lib/licencehub";
 
+export function useDocumentPrice(doc: DocumentRow | null) {
+  const { data: pricing } = usePricing();
+  if (doc?.price != null) return doc.price;
+  return pricing?.unit_price;
+}
+
 export function UnlockButton({
+  document,
   onClick,
   label = "Débloquer",
 }: {
+  document: DocumentRow;
   onClick: () => void;
   label?: string;
 }) {
-  const { data: pricing } = usePricing();
+  const price = useDocumentPrice(document);
   return (
     <Button size="sm" onClick={onClick}>
       <Lock className="mr-1.5 size-4" /> {label}
-      {pricing ? ` – ${formatFcfa(pricing.unit_price)}` : ""}
+      {price != null ? ` – ${formatFcfa(price)}` : ""}
     </Button>
   );
 }
@@ -36,6 +44,7 @@ export function UnlockDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const { data: pricing } = usePricing();
+  const price = useDocumentPrice(document);
   const soon = () => toast.info("Paiement bientôt disponible");
 
   return (
@@ -54,9 +63,11 @@ export function UnlockDialog({
             <FileLock2 className="mt-0.5 size-5 shrink-0 text-primary" />
             <span className="flex-1">
               <span className="block font-semibold">Débloquer ce document</span>
-              <span className="block text-sm text-muted-foreground">Accès à ce document uniquement.</span>
+              <span className="block text-sm text-muted-foreground">
+                Accès à ce document, acquis pour toujours.
+              </span>
             </span>
-            <span className="font-bold">{pricing ? formatFcfa(pricing.unit_price) : "…"}</span>
+            <span className="font-bold">{price != null ? formatFcfa(price) : "…"}</span>
           </button>
           <button
             type="button"
@@ -65,13 +76,13 @@ export function UnlockDialog({
           >
             <Crown className="mt-0.5 size-5 shrink-0 text-primary" />
             <span className="flex-1">
-              <span className="block font-semibold">Abonnement</span>
+              <span className="block font-semibold">Abonnement 1 mois</span>
               <span className="block text-sm text-muted-foreground">
-                Accès à toutes les Corrections et tous les Résumés.
+                Accès à toutes les Corrections et tous les Résumés pendant 1 mois.
               </span>
             </span>
             <span className="font-bold">
-              {pricing ? formatFcfa(pricing.subscription_price) : "…"}
+              {pricing ? `${formatFcfa(pricing.subscription_price)} / mois` : "…"}
             </span>
           </button>
         </div>

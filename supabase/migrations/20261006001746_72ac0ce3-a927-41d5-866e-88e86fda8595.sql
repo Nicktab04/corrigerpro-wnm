@@ -1,0 +1,1 @@
+ALTER TABLE public.documents ADD COLUMN price integer CHECK (price IS NULL OR price >= 0);

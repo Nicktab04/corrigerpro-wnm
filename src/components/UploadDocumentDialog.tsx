@@ -57,6 +57,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
   const [tdFile, setTdFile] = useState<File | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isFree, setIsFree] = useState(false);
+  const [price, setPrice] = useState("");
   const [resumeFree, setResumeFree] = useState(false);
 
   function resetForm() {
@@ -88,6 +89,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
     td_id?: string | null;
     resume_id?: string | null;
     is_free?: boolean;
+    price?: number | null;
   }) {
     const { data, error } = await supabase
       .from("documents")
@@ -149,6 +151,10 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
         td_id: isCourse ? tdId : null,
         resume_id: isCourse ? resumeId : null,
         is_free: base.kind === "correction" || base.kind === "resume" ? isFree : false,
+        price:
+          (base.kind === "correction" || base.kind === "resume") && !isFree && price.trim() !== ""
+            ? Math.max(0, Math.floor(Number(price)) || 0)
+            : null,
       });
 
       await queryClient.invalidateQueries({ queryKey: ["documents"] });
@@ -304,6 +310,18 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
               <Checkbox checked={isFree} onCheckedChange={(v) => setIsFree(v === true)} />
               Rendre ce document gratuit
             </label>
+          ) : null}
+          {(kind === "correction" || kind === "resume") && !isFree ? (
+            <div className="space-y-2">
+              <Label htmlFor="doc-price">Prix de ce document (FCFA, vide = prix par défaut)</Label>
+              <Input
+                id="doc-price"
+                type="number"
+                min={0}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
           ) : null}
           {kind === "cours" && resumeFile ? (
             <label className="flex cursor-pointer items-center gap-2 text-sm">

@@ -9,6 +9,7 @@ import { DocumentViewerDialog } from "@/components/DocumentViewerDialog";
 import { LinkCourseDialog } from "@/components/LinkCourseDialog";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { UnlockButton, UnlockDialog } from "@/components/UnlockDialog";
+import { PriceEditor } from "@/components/PriceEditor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -315,7 +316,7 @@ function Dashboard() {
                   <p className="text-sm text-muted-foreground">{doc.subject}</p>
                   {locked(doc) ? (
                     <div className="mt-4 flex flex-wrap gap-2 pt-1">
-                      <UnlockButton onClick={() => setUnlockDocument(doc)} />
+                      <UnlockButton document={doc} onClick={() => setUnlockDocument(doc)} />
                     </div>
                   ) : (
                   <div className="mt-4 flex flex-wrap gap-2 pt-1">
@@ -331,6 +332,7 @@ function Dashboard() {
                     {doc.kind === "cours" && linkedResume(doc) ? (
                       locked(linkedResume(doc)!) ? (
                         <UnlockButton
+                          document={linkedResume(doc)!}
                           label="Débloquer le Résumé"
                           onClick={() => setUnlockDocument(linkedResume(doc)!)}
                         />
@@ -357,14 +359,22 @@ function Dashboard() {
                   </div>
                   )}
                   {isAdmin && isPremiumKind(doc.kind) ? (
-                    <FreeToggle checked={Boolean(doc.is_free)} onChange={(v) => toggleFree(doc, v)} />
+                    <>
+                      <FreeToggle checked={Boolean(doc.is_free)} onChange={(v) => toggleFree(doc, v)} />
+                      {!doc.is_free ? <PriceEditor document={doc} /> : null}
+                    </>
                   ) : null}
                   {isAdmin && doc.kind === "cours" && linkedResume(doc) ? (
-                    <FreeToggle
-                      label="Rendre le Résumé gratuit"
-                      checked={Boolean(linkedResume(doc)!.is_free)}
-                      onChange={(v) => toggleFree(linkedResume(doc)!, v)}
-                    />
+                    <>
+                      <FreeToggle
+                        label="Rendre le Résumé gratuit"
+                        checked={Boolean(linkedResume(doc)!.is_free)}
+                        onChange={(v) => toggleFree(linkedResume(doc)!, v)}
+                      />
+                      {!linkedResume(doc)!.is_free ? (
+                        <PriceEditor document={linkedResume(doc)!} label="Prix du Résumé" />
+                      ) : null}
+                    </>
                   ) : null}
                 </div>
               </article>

@@ -58,7 +58,7 @@ export function UnlockDialog({
         <div className="grid gap-3">
           <button
             type="button"
-            onClick={soon}
+            onClick={pay}
             className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:bg-muted"
           >
             <FileLock2 className="mt-0.5 size-5 shrink-0 text-primary" />

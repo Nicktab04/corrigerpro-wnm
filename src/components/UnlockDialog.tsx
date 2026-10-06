@@ -1,5 +1,6 @@
 import { Crown, FileLock2, Lock } from "lucide-react";
-import { toast } from "sonner";
+
+const WAVE_PAYMENT_URL = "https://pay.wave.com/m/M_ci_vd5eYWll6jXx/c/ci/";
 
 import { Button } from "@/components/ui/button";
 import {

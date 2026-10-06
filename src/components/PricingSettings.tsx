@@ -48,15 +48,15 @@ export function PricingSettings() {
     <div className="mt-8 rounded-3xl border border-border bg-card p-5">
       <h2 className="font-bold">Tarifs</h2>
       <p className="text-sm text-muted-foreground">
-        Prix des Corrections et Résumés non gratuits.
+        Prix par défaut des Corrections et Résumés non gratuits (chaque document peut avoir son propre prix).
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         <div className="space-y-2">
-          <Label htmlFor="unit-price">Prix d'un document (FCFA)</Label>
+          <Label htmlFor="unit-price">Prix par défaut d'un document (FCFA)</Label>
           <Input id="unit-price" type="number" min={0} value={unit} onChange={(e) => setUnit(e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="sub-price">Prix de l'abonnement (FCFA)</Label>
+          <Label htmlFor="sub-price">Abonnement 1 mois (FCFA)</Label>
           <Input id="sub-price" type="number" min={0} value={sub} onChange={(e) => setSub(e.target.value)} />
         </div>
         <Button onClick={save} disabled={busy}>

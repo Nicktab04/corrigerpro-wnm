@@ -43,6 +43,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["doc_kind"]
           level: number
           major: Database["public"]["Enums"]["major"]
+          price: number | null
           resume_id: string | null
           storage_path: string
           subject: string
@@ -58,6 +59,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["doc_kind"]
           level: number
           major: Database["public"]["Enums"]["major"]
+          price?: number | null
           resume_id?: string | null
           storage_path: string
           subject: string
@@ -73,6 +75,7 @@ export type Database = {
           kind?: Database["public"]["Enums"]["doc_kind"]
           level?: number
           major?: Database["public"]["Enums"]["major"]
+          price?: number | null
           resume_id?: string | null
           storage_path?: string
           subject?: string

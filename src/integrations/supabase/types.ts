@@ -35,6 +35,39 @@ export type Database = {
         }
         Relationships: []
       }
+      document_unlocks: {
+        Row: {
+          created_at: string
+          document_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_unlocks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_unlocks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
@@ -97,6 +130,60 @@ export type Database = {
             columns: ["td_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          document_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["payment_kind"]
+          screenshot_path: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          student_seen: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["payment_kind"]
+          screenshot_path?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          student_seen?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["payment_kind"]
+          screenshot_path?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          student_seen?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_requests_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -181,6 +268,15 @@ export type Database = {
         Returns: boolean
       }
       is_approved: { Args: { _user_id: string }; Returns: boolean }
+      mark_payment_seen: { Args: { _id: string }; Returns: undefined }
+      review_payment: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
+      submit_payment_proof: {
+        Args: { _id: string; _path: string }
+        Returns: undefined
+      }
     }
     Enums: {
       access_plan: "free" | "paid"
@@ -188,6 +284,8 @@ export type Database = {
       app_role: "admin" | "uploader"
       doc_kind: "exam" | "correction" | "cours" | "td" | "resume"
       major: "SEG" | "PC" | "AGRO"
+      payment_kind: "document" | "subscription"
+      payment_status: "awaiting_proof" | "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -320,6 +418,8 @@ export const Constants = {
       app_role: ["admin", "uploader"],
       doc_kind: ["exam", "correction", "cours", "td", "resume"],
       major: ["SEG", "PC", "AGRO"],
+      payment_kind: ["document", "subscription"],
+      payment_status: ["awaiting_proof", "pending", "approved", "rejected"],
     },
   },
 } as const

@@ -124,7 +124,7 @@ function AdminPage() {
         <Loader2 className="mt-10 size-5 animate-spin text-muted-foreground" />
       ) : (
         <Tabs defaultValue="pending" className="mt-8">
-          <TabsList>
+          <TabsList className="h-auto flex-wrap">
             <TabsTrigger value="pending">Demandes ({pending.length})</TabsTrigger>
             <TabsTrigger value="approved">Étudiants validés ({approved.length})</TabsTrigger>
             <TabsTrigger value="rejected">Refusées ({rejected.length})</TabsTrigger>

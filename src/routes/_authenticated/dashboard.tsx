@@ -10,6 +10,8 @@ import { LinkCourseDialog } from "@/components/LinkCourseDialog";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { UnlockButton, UnlockDialog } from "@/components/UnlockDialog";
 import { PriceEditor } from "@/components/PriceEditor";
+import { PaymentNotices } from "@/components/PaymentNotices";
+import { useMyUnlocks } from "@/hooks/usePayments";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,7 +171,8 @@ function Dashboard() {
   const byId = new Map((linkedDocs ?? []).concat(documents ?? []).map((d) => [d.id, d]));
   const linkedTd = (doc: DocumentRow) => (doc.td_id ? byId.get(doc.td_id) : undefined);
   const linkedResume = (doc: DocumentRow) => (doc.resume_id ? byId.get(doc.resume_id) : undefined);
-  const locked = (doc: DocumentRow) => isLocked(doc, { isAdmin, plan: profile?.plan });
+  const { data: unlocked } = useMyUnlocks(user?.id);
+  const locked = (doc: DocumentRow) => isLocked(doc, { isAdmin, plan: profile?.plan, unlocked });
 
   async function toggleFree(doc: DocumentRow, value: boolean) {
     const { error } = await supabase.from("documents").update({ is_free: value }).eq("id", doc.id);
@@ -237,6 +240,8 @@ function Dashboard() {
         </div>
         {canUpload && user ? <UploadDocumentDialog userId={user.id} /> : null}
       </div>
+
+      {user && !isAdmin ? <PaymentNotices userId={user.id} documents={byId} /> : null}
 
       <div className="mt-8 grid gap-3 rounded-3xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
         <Select value={major} onValueChange={(v) => setMajor(v as Major | "all")}>

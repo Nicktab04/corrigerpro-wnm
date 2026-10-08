@@ -33,8 +33,11 @@ export interface DocumentRow {
 
 /** Corrections et Résumés sont réservés aux membres payants, sauf s'ils sont marqués gratuits. */
 export const isPremiumKind = (kind: DocKind) => kind === "correction" || kind === "resume";
-export const isLocked = (doc: DocumentRow, opts: { isAdmin: boolean; plan?: string | undefined }) =>
-  !opts.isAdmin && isPremiumKind(doc.kind) && !doc.is_free && opts.plan !== "paid";
+export const isLocked = (
+  doc: DocumentRow,
+  opts: { isAdmin: boolean; plan?: string | undefined; unlocked?: Set<string> | undefined },
+) =>
+  !opts.isAdmin && isPremiumKind(doc.kind) && !doc.is_free && opts.plan !== "paid" && !opts.unlocked?.has(doc.id);
 export const LOCKED_MESSAGE = "Contenu réservé aux membres payants";
 
 export const MAJORS: {

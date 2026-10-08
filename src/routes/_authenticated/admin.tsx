@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { PricingSettings } from "@/components/PricingSettings";
+import { PaymentRequestsAdmin, usePaymentRequestsAdmin } from "@/components/PaymentRequestsAdmin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -99,6 +100,7 @@ function AdminPage() {
     toast.success(enabled ? "Droit de dépôt accordé" : "Droit de dépôt retiré");
   }
 
+  const { data: payments } = usePaymentRequestsAdmin(isAdmin);
   const pending = (profiles ?? []).filter((p) => p.status === "pending");
   const approved = (profiles ?? []).filter((p) => p.status === "approved");
   const rejected = (profiles ?? []).filter((p) => p.status === "rejected");
@@ -126,7 +128,18 @@ function AdminPage() {
             <TabsTrigger value="pending">Demandes ({pending.length})</TabsTrigger>
             <TabsTrigger value="approved">Étudiants validés ({approved.length})</TabsTrigger>
             <TabsTrigger value="rejected">Refusées ({rejected.length})</TabsTrigger>
+            <TabsTrigger value="payments">
+              Paiements à vérifier ({(payments ?? []).filter((p) => p.status === "pending").length})
+            </TabsTrigger>
+            <TabsTrigger value="payments-done">Paiements traités</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="payments" className="mt-6 space-y-3">
+            <PaymentRequestsAdmin statusFilter="pending" />
+          </TabsContent>
+          <TabsContent value="payments-done" className="mt-6 space-y-3">
+            <PaymentRequestsAdmin statusFilter="done" />
+          </TabsContent>
 
           <TabsContent value="pending" className="mt-6 space-y-3">
             {pending.length === 0 ? (

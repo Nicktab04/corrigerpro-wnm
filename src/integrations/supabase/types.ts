@@ -17,18 +17,21 @@ export type Database = {
       app_settings: {
         Row: {
           id: number
+          subscription_duration_months: number
           subscription_price: number
           unit_price: number
           updated_at: string
         }
         Insert: {
           id?: number
+          subscription_duration_months?: number
           subscription_price?: number
           unit_price?: number
           updated_at?: string
         }
         Update: {
           id?: number
+          subscription_duration_months?: number
           subscription_price?: number
           unit_price?: number
           updated_at?: string
@@ -144,6 +147,7 @@ export type Database = {
           screenshot_path: string | null
           status: Database["public"]["Enums"]["payment_status"]
           student_seen: boolean
+          subscription_duration_months: number | null
           updated_at: string
           user_id: string
         }
@@ -156,6 +160,7 @@ export type Database = {
           screenshot_path?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           student_seen?: boolean
+          subscription_duration_months?: number | null
           updated_at?: string
           user_id: string
         }
@@ -168,6 +173,7 @@ export type Database = {
           screenshot_path?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           student_seen?: boolean
+          subscription_duration_months?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -199,6 +205,8 @@ export type Database = {
           plan: Database["public"]["Enums"]["access_plan"]
           prenom: string
           status: Database["public"]["Enums"]["access_status"]
+          subscription_expiration_seen_at: string | null
+          subscription_expires_at: string | null
           updated_at: string
           whatsapp: string
         }
@@ -212,6 +220,8 @@ export type Database = {
           plan?: Database["public"]["Enums"]["access_plan"]
           prenom: string
           status?: Database["public"]["Enums"]["access_status"]
+          subscription_expiration_seen_at?: string | null
+          subscription_expires_at?: string | null
           updated_at?: string
           whatsapp: string
         }
@@ -225,6 +235,8 @@ export type Database = {
           plan?: Database["public"]["Enums"]["access_plan"]
           prenom?: string
           status?: Database["public"]["Enums"]["access_status"]
+          subscription_expiration_seen_at?: string | null
+          subscription_expires_at?: string | null
           updated_at?: string
           whatsapp?: string
         }
@@ -269,8 +281,13 @@ export type Database = {
       }
       is_approved: { Args: { _user_id: string }; Returns: boolean }
       mark_payment_seen: { Args: { _id: string }; Returns: undefined }
+      mark_subscription_expiration_seen: { Args: never; Returns: undefined }
       review_payment: {
         Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
+      set_student_plan: {
+        Args: { _id: string; _paid: boolean }
         Returns: undefined
       }
       submit_payment_proof: {

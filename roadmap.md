@@ -1,8 +1,8 @@
 # Roadmap
 
-- [ ] Ajouter la durée configurable et les dates d’expiration des abonnements
-- [ ] Révoquer l’accès à expiration et notifier l’étudiant
-- [ ] Vérifier les règles et le parcours connecté
+- [x] Ajouter la durée configurable et les dates d’expiration des abonnements
+- [x] Révoquer l’accès à expiration et notifier l’étudiant
+- [x] Vérifier les règles par tests et sauvegarder une durée depuis le compte administrateur
 
 - [x] Ajouter la visionneuse intégrée PDF et image
 - [x] Connecter la consultation et le téléchargement original

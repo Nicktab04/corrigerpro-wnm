@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { DEFAULT_SUBSCRIPTION_MONTHS, hasPaidAccess, subscriptionExpired, validSubscriptionMonths } from "./subscriptions";
 import { isLocked, type DocumentRow } from "./licencehub";

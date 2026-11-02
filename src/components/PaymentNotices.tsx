@@ -56,11 +56,13 @@ export function PaymentNotices({ userId, documents }: { userId: string; document
     for (const p of unseen) {
       if (toasted.current.has(p.id)) continue;
       toasted.current.add(p.id);
-      const text = message(p, p.document_id ? documents.get(p.document_id)?.title : undefined);
+      const text = p.kind === "subscription" && p.status === "approved" && expired
+        ? "Votre ancien paiement d’abonnement a été confirmé. Cet abonnement a maintenant expiré."
+        : message(p, p.document_id ? documents.get(p.document_id)?.title : undefined);
       if (p.status === "approved") toast.success(text);
       else toast.error(text);
     }
-  }, [unseen, documents]);
+  }, [unseen, documents, expired]);
 
   useEffect(() => {
     if (unseen.some((p) => p.status === "approved")) {

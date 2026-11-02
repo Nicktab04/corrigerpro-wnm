@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useSessionUser } from "@/hooks/useLicenceHub";
 import { levelLabel, majorStyle, type AccessStatus, type Profile } from "@/lib/licencehub";
+import { hasPaidAccess, subscriptionDate, subscriptionExpired } from "@/lib/subscriptions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -79,7 +80,7 @@ function AdminPage() {
   }
 
   async function setPlan(id: string, plan: "free" | "paid") {
-    const { error } = await supabase.from("profiles").update({ plan }).eq("id", id);
+    const { error } = await supabase.rpc("set_student_plan", { _id: id, _paid: plan === "paid" });
     if (error) {
       toast.error(error.message);
       return;
@@ -181,13 +182,14 @@ function AdminPage() {
                   </label>
                   <label className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Switch
-                      checked={p.plan === "paid"}
+                      checked={hasPaidAccess(p.plan, p.subscription_expires_at)}
                       onCheckedChange={(v) => setPlan(p.id, v ? "paid" : "free")}
                     />
-                    <span className={p.plan === "paid" ? "text-foreground" : ""}>
-                      {p.plan === "paid" ? "Payant" : "Gratuit"}
+                    <span className={hasPaidAccess(p.plan, p.subscription_expires_at) ? "text-foreground" : ""}>
+                      {hasPaidAccess(p.plan, p.subscription_expires_at) ? "Payant" : "Gratuit"}
                     </span>
                   </label>
+                  {p.subscription_expires_at ? <span className="text-xs text-muted-foreground">{subscriptionExpired(p.subscription_expires_at) ? "Expiré le " : "Expire le "}{subscriptionDate(p.subscription_expires_at)}</span> : null}
                   <Button size="sm" variant="ghost" onClick={() => setStatus(p.id, "rejected")}>
                     Révoquer l'accès
                   </Button>

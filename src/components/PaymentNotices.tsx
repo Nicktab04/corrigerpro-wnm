@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyPayments, type PaymentRequest } from "@/hooks/usePayments";
 import type { DocumentRow } from "@/lib/licencehub";
+import { useProfile } from "@/hooks/useLicenceHub";
+import { useSubscriptionClock } from "@/hooks/useSubscriptionClock";
+import { subscriptionDate, subscriptionExpired } from "@/lib/subscriptions";
 
 function message(p: PaymentRequest, title?: string) {
   if (p.status === "approved") {
@@ -22,12 +25,32 @@ function message(p: PaymentRequest, title?: string) {
 export function PaymentNotices({ userId, documents }: { userId: string; documents: Map<string, DocumentRow> }) {
   const queryClient = useQueryClient();
   const { data: payments } = useMyPayments(userId);
+  const { data: profile } = useProfile(userId);
+  const now = useSubscriptionClock(profile?.subscription_expires_at);
+  const expiresAt = profile?.subscription_expires_at;
+  const expired = subscriptionExpired(expiresAt, now);
+  const showExpiration = expired && profile?.subscription_expiration_seen_at !== expiresAt;
   const toasted = useRef(new Set<string>());
 
   const unseen = (payments ?? []).filter(
     (p) => !p.student_seen && (p.status === "approved" || p.status === "rejected"),
   );
   const pending = (payments ?? []).filter((p) => p.status === "pending");
+
+  useEffect(() => {
+    if (!showExpiration || !expiresAt || toasted.current.has(expiresAt)) return;
+    toasted.current.add(expiresAt);
+    toast.warning("Votre abonnement a expiré. Votre accès est redevenu gratuit. Les documents achetés restent disponibles.");
+  }, [showExpiration, expiresAt]);
+
+  async function dismissExpiration() {
+    const { error } = await supabase.rpc("mark_subscription_expiration_seen");
+    if (error) {
+      toast.error("Impossible de fermer la notification");
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+  }
 
   useEffect(() => {
     for (const p of unseen) {
@@ -51,10 +74,21 @@ export function PaymentNotices({ userId, documents }: { userId: string; document
     await queryClient.invalidateQueries({ queryKey: ["my-payments"] });
   }
 
-  if (unseen.length === 0 && pending.length === 0) return null;
+  if (unseen.length === 0 && pending.length === 0 && !expiresAt) return null;
 
   return (
     <div className="mt-6 space-y-2">
+      {showExpiration ? (
+        <div role="status" className="flex items-start gap-3 rounded-2xl border border-warning/40 bg-warning/10 p-4 text-sm">
+          <Clock className="mt-0.5 size-5 shrink-0 text-warning" />
+          <p className="flex-1">Votre abonnement a expiré. Votre accès est redevenu gratuit. Les documents achetés restent disponibles.</p>
+          <Button size="icon" variant="ghost" className="size-7 shrink-0" onClick={dismissExpiration} aria-label="Fermer la notification d’expiration">
+            <X className="size-4" />
+          </Button>
+        </div>
+      ) : expiresAt && !expired ? (
+        <p className="text-sm text-muted-foreground">Abonnement actif jusqu’au {subscriptionDate(expiresAt)} (heure d’Abidjan).</p>
+      ) : null}
       {unseen.map((p) => {
         const ok = p.status === "approved";
         return (
@@ -67,7 +101,7 @@ export function PaymentNotices({ userId, documents }: { userId: string; document
             ) : (
               <XCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
             )}
-            <p className="flex-1">{message(p, p.document_id ? documents.get(p.document_id)?.title : undefined)}</p>
+            <p className="flex-1">{p.kind === "subscription" && p.status === "approved" && expired ? "Votre ancien paiement d’abonnement a été confirmé. Cet abonnement a maintenant expiré." : message(p, p.document_id ? documents.get(p.document_id)?.title : undefined)}</p>
             <Button size="icon" variant="ghost" className="size-7" onClick={() => dismiss(p.id)} aria-label="Fermer">
               <X className="size-4" />
             </Button>

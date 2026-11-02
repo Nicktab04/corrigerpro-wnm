@@ -18,6 +18,7 @@ export interface PaymentRequest {
   student_seen: boolean;
   created_at: string;
   updated_at: string;
+  subscription_duration_months: number | null;
 }
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {

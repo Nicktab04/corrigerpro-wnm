@@ -1,3 +1,5 @@
+import { hasPaidAccess } from "./subscriptions";
+
 export type Major = "SEG" | "PC" | "AGRO";
 export type DocKind = "exam" | "correction" | "cours" | "td" | "resume";
 export type AccessStatus = "pending" | "approved" | "rejected";
@@ -12,6 +14,8 @@ export interface Profile {
   level: number;
   status: AccessStatus;
   plan?: "free" | "paid";
+  subscription_expires_at?: string | null;
+  subscription_expiration_seen_at?: string | null;
   created_at: string;
 }
 
@@ -35,9 +39,9 @@ export interface DocumentRow {
 export const isPremiumKind = (kind: DocKind) => kind === "correction" || kind === "resume";
 export const isLocked = (
   doc: DocumentRow,
-  opts: { isAdmin: boolean; plan?: string | undefined; unlocked?: Set<string> | undefined },
+  opts: { isAdmin: boolean; plan?: string | undefined; expiresAt?: string | null | undefined; now?: number; unlocked?: Set<string> | undefined },
 ) =>
-  !opts.isAdmin && isPremiumKind(doc.kind) && !doc.is_free && opts.plan !== "paid" && !opts.unlocked?.has(doc.id);
+  !opts.isAdmin && isPremiumKind(doc.kind) && !doc.is_free && !hasPaidAccess(opts.plan, opts.expiresAt, opts.now) && !opts.unlocked?.has(doc.id);
 export const LOCKED_MESSAGE = "Contenu réservé aux membres payants";
 
 export const MAJORS: {

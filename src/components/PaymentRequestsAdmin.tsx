@@ -93,7 +93,7 @@ export function PaymentRequestsAdmin({ statusFilter }: { statusFilter: "pending"
             </p>
             {r.student ? <p className="text-sm text-muted-foreground">{r.student.gmail}</p> : null}
             <p className="mt-1 text-sm">
-              {r.kind === "subscription" ? "Abonnement 1 mois" : (r.documentTitle ?? "Document supprimé")} —{" "}
+              {r.kind === "subscription" ? `Abonnement ${r.subscription_duration_months ?? 1} mois` : (r.documentTitle ?? "Document supprimé")} —{" "}
               <span className="font-semibold">{formatFcfa(r.amount)}</span>
             </p>
             <p className="text-xs text-muted-foreground">{new Date(r.updated_at).toLocaleString("fr-FR")}</p>

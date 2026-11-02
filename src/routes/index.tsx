@@ -7,6 +7,8 @@ import { MAJORS, LEVELS, levelLabel } from "@/lib/licencehub";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "CorrigéPro — Sujets et corrections par filière" },
       {
         name: "description",

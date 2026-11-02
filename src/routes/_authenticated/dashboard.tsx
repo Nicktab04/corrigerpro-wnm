@@ -44,6 +44,7 @@ import {
   type Major,
 } from "@/lib/licencehub";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useSubscriptionClock } from "@/hooks/useSubscriptionClock";
 
 function FreeToggle({
   checked,
@@ -65,6 +66,8 @@ function FreeToggle({
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Mes annales — CorrigéPro" },
       {
         name: "description",
@@ -85,6 +88,7 @@ function Dashboard() {
   const queryClient = useQueryClient();
   const { user } = useSessionUser();
   const { data: profile, isLoading: profileLoading } = useProfile(user?.id);
+  const subscriptionNow = useSubscriptionClock(profile?.subscription_expires_at);
   const rolesQuery = useIsAdmin(user?.id);
   const roles = rolesQuery.data;
   const rolesResolved = Boolean(user) && (rolesQuery.isSuccess || rolesQuery.isError);
@@ -172,7 +176,15 @@ function Dashboard() {
   const linkedTd = (doc: DocumentRow) => (doc.td_id ? byId.get(doc.td_id) : undefined);
   const linkedResume = (doc: DocumentRow) => (doc.resume_id ? byId.get(doc.resume_id) : undefined);
   const { data: unlocked } = useMyUnlocks(user?.id);
-  const locked = (doc: DocumentRow) => isLocked(doc, { isAdmin, plan: profile?.plan, unlocked });
+  const locked = (doc: DocumentRow) => isLocked(doc, { isAdmin, plan: profile?.plan, expiresAt: profile?.subscription_expires_at, now: subscriptionNow, unlocked });
+  const linkExpiry = (doc: DocumentRow) => !isAdmin && isPremiumKind(doc.kind) && !doc.is_free && !unlocked?.has(doc.id) ? profile?.subscription_expires_at : undefined;
+
+  useEffect(() => {
+    if (viewerDocument && isLocked(viewerDocument, { isAdmin, plan: profile?.plan, expiresAt: profile?.subscription_expires_at, now: subscriptionNow, unlocked })) {
+      setViewerDocument(null);
+      setViewerUrl(null);
+    }
+  }, [subscriptionNow, profile, isAdmin, unlocked, viewerDocument]);
 
   async function toggleFree(doc: DocumentRow, value: boolean) {
     const { error } = await supabase.from("documents").update({ is_free: value }).eq("id", doc.id);
@@ -193,7 +205,7 @@ function Dashboard() {
     setViewerDocument(doc);
     setViewerUrl(null);
     try {
-      const url = await openDocument(doc.storage_path);
+      const url = await openDocument(doc.storage_path, linkExpiry(doc));
       setViewerUrl(url);
     } catch {
       setViewerDocument(null);
@@ -208,7 +220,7 @@ function Dashboard() {
     }
     setDownloadingId(doc.id);
     try {
-      await openDocumentInNewTab(doc.storage_path);
+      await openDocumentInNewTab(doc.storage_path, linkExpiry(doc));
     } catch {
       toast.error("Impossible d'ouvrir ce fichier");
     } finally {

@@ -145,13 +145,13 @@ export function UnlockDialog({
               >
                 <Crown className="mt-0.5 size-5 shrink-0 text-primary" />
                 <span className="flex-1">
-                  <span className="block font-semibold">Abonnement 1 mois</span>
+                  <span className="block font-semibold">Abonnement {pricing?.subscription_duration_months ?? 1} mois</span>
                   <span className="block text-sm text-muted-foreground">
-                    Accès à toutes les Corrections et tous les Résumés pendant 1 mois.
+                    Accès à toutes les Corrections et tous les Résumés pendant {pricing?.subscription_duration_months ?? 1} mois à compter de la confirmation.
                   </span>
                 </span>
                 <span className="font-bold">
-                  {pricing ? `${formatFcfa(pricing.subscription_price)} / mois` : "…"}
+                  {pricing ? formatFcfa(pricing.subscription_price) : "…"}
                 </span>
               </button>
             </div>
@@ -170,7 +170,7 @@ function ProofStep({ request, documentTitle }: { request: PaymentRequest; docume
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const what = request.kind === "subscription" ? "Abonnement 1 mois" : (documentTitle ?? "Document");
+  const what = request.kind === "subscription" ? `Abonnement ${request.subscription_duration_months ?? 1} mois` : (documentTitle ?? "Document");
 
   async function send() {
     if (!file) {

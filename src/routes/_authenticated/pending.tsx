@@ -10,6 +10,8 @@ import { levelLabel, majorStyle } from "@/lib/licencehub";
 export const Route = createFileRoute("/_authenticated/pending")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Demande en attente — CorrigéPro" },
       { name: "description", content: "Votre demande d'accès aux annales est en cours de validation." },
       { property: "og:title", content: "Demande en attente — CorrigéPro" },

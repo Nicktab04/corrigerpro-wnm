@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/lib/licencehub";
+import { signedLinkLifetime } from "@/lib/subscriptions";
 
 export function useSessionUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -35,10 +36,11 @@ export function useProfile(userId: string | undefined) {
     queryKey: ["profile", userId],
     enabled: Boolean(userId),
     queryFn: async () => {
+      if (!userId) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", userId!)
+        .eq("id", userId)
         .maybeSingle();
       if (error) throw error;
       return (data as Profile | null) ?? null;
@@ -65,11 +67,11 @@ export function usePricing() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("app_settings")
-        .select("unit_price, subscription_price")
+        .select("unit_price, subscription_price, subscription_duration_months")
         .eq("id", 1)
         .maybeSingle();
       if (error) throw error;
-      return data ?? { unit_price: 0, subscription_price: 0 };
+      return data ?? { unit_price: 0, subscription_price: 0, subscription_duration_months: 1 };
     },
   });
 }
@@ -80,8 +82,8 @@ export const formatFcfa = (amount: number) =>
 
 
 
-export async function openDocument(storagePath: string) {
-  const { data, error } = await supabase.storage.from("documents").createSignedUrl(storagePath, 120);
+export async function openDocument(storagePath: string, expiresAt?: string | null) {
+  const { data, error } = await supabase.storage.from("documents").createSignedUrl(storagePath, signedLinkLifetime(expiresAt));
   if (error || !data) throw error ?? new Error("Lien indisponible");
   return data.signedUrl;
 }
@@ -119,14 +121,14 @@ async function blobDownload(storagePath: string, filename: string) {
  * redirigée vers l'URL signée : c'est le seul moyen fiable d'éviter les
  * bloqueurs de pop-up et les onglets "about:blank" sur Safari/Chrome mobile.
  */
-export async function openDocumentInNewTab(storagePath: string) {
+export async function openDocumentInNewTab(storagePath: string, expiresAt?: string | null) {
   const tab = window.open("", "_blank", "noopener,noreferrer");
 
   let signedUrl: string;
   try {
     const { data, error } = await supabase.storage
       .from("documents")
-      .createSignedUrl(storagePath, 3600);
+      .createSignedUrl(storagePath, signedLinkLifetime(expiresAt, 3600));
     if (error || !data?.signedUrl) throw error ?? new Error("Lien indisponible");
     signedUrl = data.signedUrl;
   } catch (error) {

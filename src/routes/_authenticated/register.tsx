@@ -23,6 +23,8 @@ import { LEVELS, MAJORS, levelLabel, type Major } from "@/lib/licencehub";
 export const Route = createFileRoute("/_authenticated/register")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Demande d'accès — CorrigéPro" },
       {
         name: "description",

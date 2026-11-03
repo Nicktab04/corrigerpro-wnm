@@ -3,6 +3,9 @@ import { strict as assert } from "node:assert";
 import { studentDestination } from "./student-access";
 
 describe("registration access", () => {
+  test("a newly signed-in student without information goes directly to registration", () => {
+    assert.equal(studentDestination(undefined, false), "/register");
+  });
   test("completed student information opens the application immediately", () => {
     assert.equal(studentDestination("approved"), "/dashboard");
   });

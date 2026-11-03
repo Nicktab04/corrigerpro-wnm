@@ -43,6 +43,17 @@ export function useProfile(userId: string | undefined) {
         .eq("id", userId)
         .maybeSingle();
       if (error) throw error;
+      if (data?.status === "pending") {
+        const { data: activated, error: activationError } = await supabase
+          .from("profiles")
+          .update({ status: "approved" })
+          .eq("id", userId)
+          .eq("status", "pending")
+          .select("*")
+          .single();
+        if (activationError) throw activationError;
+        return activated as Profile;
+      }
       return (data as Profile | null) ?? null;
     },
   });

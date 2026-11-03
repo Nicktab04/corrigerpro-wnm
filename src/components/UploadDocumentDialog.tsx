@@ -184,7 +184,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
           <DialogTitle>Ajouter un document</DialogTitle>
           <DialogDescription>
             Sujet, correction, cours, TD ou résumé. Les fichiers restent privés et ne sont visibles
-            que par les étudiants validés.
+            que par les étudiants inscrits, selon leurs droits d'accès.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

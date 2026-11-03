@@ -78,7 +78,7 @@ function AdminPage() {
       return;
     }
     await queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
-    toast.success(status === "approved" ? "Accès accordé" : "Demande refusée");
+    toast.success(status === "approved" ? "Accès accordé" : "Accès révoqué");
   }
 
   async function setPlan(id: string, plan: "free" | "paid") {

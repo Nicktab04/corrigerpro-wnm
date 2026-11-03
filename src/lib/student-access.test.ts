@@ -1,20 +1,21 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import { strict as assert } from "node:assert";
 import { studentDestination } from "./student-access";
 
 describe("registration access", () => {
   test("completed student information opens the application immediately", () => {
-    expect(studentDestination("approved")).toBe("/dashboard");
+    assert.equal(studentDestination("approved"), "/dashboard");
   });
   test("legacy students awaiting approval no longer wait", () => {
-    expect(studentDestination("pending")).toBe("/dashboard");
+    assert.equal(studentDestination("pending"), "/dashboard");
   });
   test("incomplete information still requires the student form", () => {
-    expect(studentDestination(undefined)).toBe("/register");
+    assert.equal(studentDestination(undefined), "/register");
   });
   test("administrators keep direct access to administration", () => {
-    expect(studentDestination(undefined, true)).toBe("/admin");
+    assert.equal(studentDestination(undefined, true), "/admin");
   });
   test("explicitly revoked accounts are not automatically reinstated", () => {
-    expect(studentDestination("rejected")).toBe("/pending");
+    assert.equal(studentDestination("rejected"), "/pending");
   });
 });

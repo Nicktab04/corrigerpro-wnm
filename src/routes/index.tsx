@@ -104,7 +104,7 @@ function Landing() {
             {
               icon: ShieldCheck,
               title: "2. Vous complétez votre profil",
-              text: "Confirmez votre email et renseignez vos informations pour accéder directement à votre espace.",
+              text: "Renseignez vos informations pour accéder directement à votre espace, sans attente.",
             },
             {
               icon: Download,

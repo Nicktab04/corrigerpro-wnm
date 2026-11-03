@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { useIsAdmin, useSessionUser } from "@/hooks/useLicenceHub";
+import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
+import { studentDestination } from "@/lib/student-access";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -45,16 +46,21 @@ function AuthPage() {
   const navigate = useNavigate();
   const { user, loading } = useSessionUser();
   const rolesQuery = useIsAdmin(user?.id);
+  const profileQuery = useProfile(user?.id);
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [sentConfirm, setSentConfirm] = useState(false);
 
   useEffect(() => {
     if (loading || !user) return;
     if (!rolesQuery.isSuccess && !rolesQuery.isError) return;
-    navigate({ to: rolesQuery.data?.isAdmin ? "/admin" : "/dashboard", replace: true });
-  }, [loading, user, rolesQuery.isSuccess, rolesQuery.isError, rolesQuery.data, navigate]);
+    if (rolesQuery.data?.isAdmin) {
+      navigate({ to: "/admin", replace: true });
+      return;
+    }
+    if (!profileQuery.isSuccess) return;
+    navigate({ to: studentDestination(profileQuery.data?.status), replace: true });
+  }, [loading, user, rolesQuery.isSuccess, rolesQuery.isError, rolesQuery.data, profileQuery.isSuccess, profileQuery.data, navigate]);
 
 
   async function signIn() {
@@ -69,14 +75,15 @@ function AuthPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin + "/register" },
     });
     setBusy(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    if (!data.session) setSentConfirm(true);
+    if (!data.session) {
+      toast.error("La connexion automatique a échoué. Réessayez de vous connecter.");
+    }
   }
 
   async function google() {
@@ -88,7 +95,6 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
   }
 
   return (
@@ -103,7 +109,7 @@ function AuthPage() {
             Les annales de votre filière, prêtes à réviser.
           </h2>
           <p className="mt-4 max-w-md opacity-80">
-            SEG, PC, AGRO — Licence 1 à 3. Confirmez votre email, complétez vos informations,
+            SEG, PC, AGRO — Licence 1 à 3. Créez votre compte, complétez vos informations,
             puis accédez à vos annales.
           </p>
         </div>
@@ -117,15 +123,6 @@ function AuthPage() {
             <span className="font-display font-bold">CorrigéPro</span>
           </Link>
 
-          {sentConfirm ? (
-            <div className="rounded-2xl border border-border bg-card p-6">
-              <h1 className="text-xl font-bold">Vérifiez votre boîte mail</h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Nous avons envoyé un lien de confirmation à {email}. Cliquez dessus pour continuer
-                votre inscription.
-              </p>
-            </div>
-          ) : (
             <Tabs defaultValue={mode === "signup" ? "signup" : "signin"}>
               <TabsList className="w-full">
                 <TabsTrigger value="signin" className="flex-1">
@@ -181,7 +178,6 @@ function AuthPage() {
                 </Button>
               </div>
             </Tabs>
-          )}
         </div>
       </div>
     </div>

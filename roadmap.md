@@ -1,8 +1,8 @@
 # Roadmap
 
-- [ ] Supprimer l’approbation à l’inscription et ouvrir les accès en attente
-- [ ] Adapter le formulaire et les messages à l’accès immédiat
-- [ ] Vérifier le parcours étudiant et préserver les accès payants
+- [x] Supprimer l’approbation à l’inscription et ouvrir les accès en attente
+- [x] Adapter le formulaire et les messages à l’accès immédiat
+- [x] Vérifier les règles, le catalogue connecté et préserver les accès payants (nouvelle inscription complète non testée : session disponible administrateur)
 
 - [x] Ajouter la durée configurable et les dates d’expiration des abonnements
 - [x] Révoquer l’accès à expiration et notifier l’étudiant

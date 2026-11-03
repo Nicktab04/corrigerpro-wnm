@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Supprimer l’approbation à l’inscription et ouvrir les accès en attente
+- [ ] Adapter le formulaire et les messages à l’accès immédiat
+- [ ] Vérifier le parcours étudiant et préserver les accès payants
+
 - [x] Ajouter la durée configurable et les dates d’expiration des abonnements
 - [x] Révoquer l’accès à expiration et notifier l’étudiant
 - [x] Vérifier les règles par tests et sauvegarder une durée depuis le compte administrateur

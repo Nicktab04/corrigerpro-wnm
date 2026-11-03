@@ -45,6 +45,7 @@ import {
 } from "@/lib/licencehub";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSubscriptionClock } from "@/hooks/useSubscriptionClock";
+import { studentDestination } from "@/lib/student-access";
 
 function FreeToggle({
   checked,
@@ -107,13 +108,8 @@ function Dashboard() {
   useEffect(() => {
     if (profileLoading || !rolesResolved) return;
     if (isAdmin) return;
-    if (!profile) {
-      navigate({ to: "/register", replace: true });
-      return;
-    }
-    if (profile.status !== "approved") {
-      navigate({ to: "/pending", replace: true });
-    }
+    const destination = studentDestination(profile?.status);
+    if (destination !== "/dashboard") navigate({ to: destination, replace: true });
   }, [profile, profileLoading, rolesResolved, isAdmin, navigate]);
 
 

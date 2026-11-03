@@ -19,6 +19,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
 import { LEVELS, MAJORS, levelLabel, type Major } from "@/lib/licencehub";
+import { studentDestination } from "@/lib/student-access";
 
 export const Route = createFileRoute("/_authenticated/register")({
   head: () => ({
@@ -79,7 +80,7 @@ function RegisterPage() {
   }, [roles?.isAdmin, navigate]);
 
   useEffect(() => {
-    if (profile && !roles?.isAdmin) navigate({ to: "/dashboard", replace: true });
+    if (profile && !roles?.isAdmin) navigate({ to: studentDestination(profile.status), replace: true });
   }, [profile, roles?.isAdmin, navigate]);
 
 

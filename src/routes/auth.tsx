@@ -28,7 +28,7 @@ export const Route = createFileRoute("/auth")({
       { title: "Connexion — CorrigéPro" },
       {
         name: "description",
-        content: "Connectez-vous à CorrigéPro ou créez votre compte étudiant pour demander un accès.",
+        content: "Connectez-vous à CorrigéPro ou créez votre compte étudiant pour accéder aux annales.",
       },
       { property: "og:title", content: "Connexion — CorrigéPro" },
       {
@@ -103,11 +103,11 @@ function AuthPage() {
             Les annales de votre filière, prêtes à réviser.
           </h2>
           <p className="mt-4 max-w-md opacity-80">
-            SEG, PC, AGRO — Licence 1 à 3. Créez votre compte, un responsable valide votre accès,
-            puis tout s'ouvre.
+            SEG, PC, AGRO — Licence 1 à 3. Confirmez votre email, complétez vos informations,
+            puis accédez à vos annales.
           </p>
         </div>
-        <p className="text-sm opacity-70">Accès validé par l'administration</p>
+        <p className="text-sm opacity-70">Accès immédiat après inscription</p>
       </div>
 
       <div className="flex items-center justify-center px-5 py-14">

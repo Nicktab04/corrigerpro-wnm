@@ -13,7 +13,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "CorrigéPro réunit les sujets d'examens et leurs corrections pour les étudiants de Licence 1, 2 et 3 en SEG, PC et AGRO. Demandez un accès, puis révisez.",
+          "CorrigéPro réunit les sujets d'examens et leurs corrections pour les étudiants de Licence 1, 2 et 3 en SEG, PC et AGRO. Inscrivez-vous, puis révisez.",
       },
       { property: "og:title", content: "CorrigéPro — Sujets et corrections par filière" },
       {
@@ -42,7 +42,7 @@ function Landing() {
           </Button>
           <Button asChild>
             <Link to="/auth" search={{ mode: "signup" }}>
-              Demander un accès
+              S'inscrire
             </Link>
           </Button>
         </nav>
@@ -50,7 +50,7 @@ function Landing() {
 
       <section className="mx-auto max-w-6xl px-5 pt-10 pb-20">
         <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground">
-          <BadgeCheck className="size-3.5 text-primary" /> Accès réservé aux étudiants validés
+          <BadgeCheck className="size-3.5 text-primary" /> Accès immédiat après inscription
         </p>
         <h1 className="mt-6 max-w-3xl text-4xl leading-[1.05] font-extrabold sm:text-6xl">
           Tous les sujets d'examens et leurs corrections, au même endroit.
@@ -103,8 +103,8 @@ function Landing() {
             },
             {
               icon: ShieldCheck,
-              title: "2. Un responsable valide",
-              text: "Votre demande passe en attente. Dès qu'elle est acceptée, votre espace s'ouvre.",
+              title: "2. Vous complétez votre profil",
+              text: "Confirmez votre email et renseignez vos informations pour accéder directement à votre espace.",
             },
             {
               icon: Download,

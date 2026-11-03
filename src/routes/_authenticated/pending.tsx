@@ -12,12 +12,12 @@ export const Route = createFileRoute("/_authenticated/pending")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Demande en attente — CorrigéPro" },
-      { name: "description", content: "Votre demande d'accès aux annales est en cours de validation." },
-      { property: "og:title", content: "Demande en attente — CorrigéPro" },
+      { title: "Statut d’accès — CorrigéPro" },
+      { name: "description", content: "Consultez le statut de votre accès aux annales CorrigéPro." },
+      { property: "og:title", content: "Statut d’accès — CorrigéPro" },
       {
         property: "og:description",
-        content: "Votre demande d'accès aux annales est en cours de validation.",
+        content: "Consultez le statut de votre accès aux annales CorrigéPro.",
       },
     ],
   }),
@@ -36,13 +36,15 @@ function PendingPage() {
       return;
     }
     if (!isLoading && !profile) navigate({ to: "/register", replace: true });
-    if (profile?.status === "approved") navigate({ to: "/dashboard", replace: true });
+    if (profile && profile.status !== "rejected") navigate({ to: "/dashboard", replace: true });
   }, [isLoading, profile, roles?.isAdmin, navigate]);
 
   const rejected = profile?.status === "rejected";
 
+  if (!rejected) return null;
+
   return (
-    <AppShell subtitle="Statut de la demande">
+    <AppShell subtitle="Statut d’accès">
       <div className="mx-auto max-w-xl rounded-3xl border border-border bg-card p-8 text-center">
         <span
           className={`mx-auto grid size-14 place-items-center rounded-2xl ${rejected ? "bg-destructive/10 text-destructive" : "bg-warning/15 text-warning"}`}
@@ -50,12 +52,10 @@ function PendingPage() {
           {rejected ? <ShieldX className="size-6" /> : <Clock className="size-6" />}
         </span>
         <h1 className="mt-5 text-2xl font-extrabold">
-          {rejected ? "Demande refusée" : "Demande en attente de validation"}
+          Accès révoqué
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          {rejected
-            ? "Un responsable n'a pas validé votre demande. Contactez l'administration de votre filière pour en savoir plus."
-            : "Un responsable examine votre demande. Vous verrez les annales dès qu'elle sera acceptée — revenez sur cette page pour vérifier."}
+          Votre accès a été révoqué par un responsable. Contactez l'administration pour en savoir plus.
         </p>
 
         {profile ? (

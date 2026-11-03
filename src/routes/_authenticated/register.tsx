@@ -19,21 +19,22 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin, useProfile, useSessionUser } from "@/hooks/useLicenceHub";
 import { LEVELS, MAJORS, levelLabel, type Major } from "@/lib/licencehub";
+import { studentDestination } from "@/lib/student-access";
 
 export const Route = createFileRoute("/_authenticated/register")({
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Demande d'accès — CorrigéPro" },
+      { title: "Informations étudiant — CorrigéPro" },
       {
         name: "description",
-        content: "Complétez vos informations d'étudiant pour demander l'accès aux annales.",
+        content: "Complétez vos informations d'étudiant pour accéder directement aux annales.",
       },
-      { property: "og:title", content: "Demande d'accès — CorrigéPro" },
+      { property: "og:title", content: "Informations étudiant — CorrigéPro" },
       {
         property: "og:description",
-        content: "Complétez vos informations d'étudiant pour demander l'accès aux annales.",
+        content: "Complétez vos informations d'étudiant pour accéder directement aux annales.",
       },
     ],
   }),
@@ -79,11 +80,12 @@ function RegisterPage() {
   }, [roles?.isAdmin, navigate]);
 
   useEffect(() => {
-    if (profile && !roles?.isAdmin) navigate({ to: "/pending", replace: true });
+    if (profile && !roles?.isAdmin) navigate({ to: studentDestination(profile.status), replace: true });
   }, [profile, roles?.isAdmin, navigate]);
 
 
   async function submit() {
+    if (!user || busy) return;
     const parsed = schema.safeParse({
       nom,
       prenom,
@@ -97,23 +99,23 @@ function RegisterPage() {
       return;
     }
     setBusy(true);
-    const { error } = await supabase.from("profiles").insert({ id: user!.id, ...parsed.data });
+    const { error } = await supabase.from("profiles").insert({ id: user.id, ...parsed.data });
     setBusy(false);
     if (error) {
       toast.error(error.message);
       return;
     }
     await queryClient.invalidateQueries({ queryKey: ["profile"] });
-    toast.success("Demande envoyée");
-    navigate({ to: "/pending", replace: true });
+    toast.success("Bienvenue sur CorrigéPro");
+    navigate({ to: "/dashboard", replace: true });
   }
 
   return (
-    <AppShell subtitle="Demande d'accès">
+    <AppShell subtitle="Informations étudiant">
       <div className="mx-auto max-w-xl">
         <h1 className="text-3xl font-extrabold">Vos informations d'étudiant</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Un responsable vérifie chaque demande avant d'ouvrir l'accès aux annales.
+          Complétez vos informations pour accéder directement à vos annales.
         </p>
 
         {isLoading ? (
@@ -188,7 +190,7 @@ function RegisterPage() {
               </div>
             </div>
             <Button className="w-full" onClick={submit} disabled={busy}>
-              {busy && <Loader2 className="mr-2 size-4 animate-spin" />} Envoyer ma demande
+              {busy && <Loader2 className="mr-2 size-4 animate-spin" />} Valider et accéder à l'application
             </Button>
           </div>
         )}

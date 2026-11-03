@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Supprimer la confirmation email et aller directement aux informations étudiant
+- [ ] Vérifier une inscription complète jusqu’au catalogue
+
 - [x] Supprimer l’approbation à l’inscription et ouvrir les accès en attente
 - [x] Adapter le formulaire et les messages à l’accès immédiat
 - [x] Vérifier les règles, le catalogue connecté et préserver les accès payants (nouvelle inscription complète non testée : session disponible administrateur)

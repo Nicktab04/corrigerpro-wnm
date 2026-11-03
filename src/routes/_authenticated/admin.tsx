@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { Check, Loader2, ShieldOff, ShieldCheck, X } from "lucide-react";
+import { Check, Loader2, ShieldOff, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -25,12 +25,12 @@ export const Route = createFileRoute("/_authenticated/admin")({
       { title: "Administration — CorrigéPro" },
       {
         name: "description",
-        content: "Validez les demandes d'accès, gérez les droits de dépôt et publiez des annales.",
+        content: "Gérez les étudiants, les droits de dépôt et les annales.",
       },
       { property: "og:title", content: "Administration — CorrigéPro" },
       {
         property: "og:description",
-        content: "Validez les demandes d'accès, gérez les droits de dépôt et publiez des annales.",
+        content: "Gérez les étudiants, les droits de dépôt et les annales.",
       },
     ],
   }),
@@ -104,7 +104,6 @@ function AdminPage() {
   }
 
   const { data: payments } = usePaymentRequestsAdmin(isAdmin);
-  const pending = (profiles ?? []).filter((p) => p.status === "pending");
   const approved = (profiles ?? []).filter((p) => p.status === "approved");
   const rejected = (profiles ?? []).filter((p) => p.status === "rejected");
 
@@ -114,7 +113,7 @@ function AdminPage() {
         <div>
           <h1 className="text-3xl font-extrabold">Administration</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Validez les demandes d'accès, accordez le droit de dépôt et publiez de nouvelles annales.
+            Gérez les étudiants, accordez le droit de dépôt et publiez de nouvelles annales.
           </p>
         </div>
         {user ? <UploadDocumentDialog userId={user.id} /> : null}
@@ -126,11 +125,10 @@ function AdminPage() {
       {isLoading ? (
         <Loader2 className="mt-10 size-5 animate-spin text-muted-foreground" />
       ) : (
-        <Tabs defaultValue="pending" className="mt-8">
+        <Tabs defaultValue="approved" className="mt-8">
           <TabsList className="h-auto flex-wrap">
-            <TabsTrigger value="pending">Demandes ({pending.length})</TabsTrigger>
-            <TabsTrigger value="approved">Étudiants validés ({approved.length})</TabsTrigger>
-            <TabsTrigger value="rejected">Refusées ({rejected.length})</TabsTrigger>
+            <TabsTrigger value="approved">Étudiants ({approved.length})</TabsTrigger>
+            <TabsTrigger value="rejected">Accès révoqués ({rejected.length})</TabsTrigger>
             <TabsTrigger value="payments">
               Paiements à vérifier ({(payments ?? []).filter((p) => p.status === "pending").length})
             </TabsTrigger>
@@ -144,26 +142,9 @@ function AdminPage() {
             <PaymentRequestsAdmin statusFilter="done" />
           </TabsContent>
 
-          <TabsContent value="pending" className="mt-6 space-y-3">
-            {pending.length === 0 ? (
-              <EmptyRow text="Aucune demande en attente." />
-            ) : (
-              pending.map((p) => (
-                <StudentRow key={p.id} profile={p}>
-                  <Button size="sm" onClick={() => setStatus(p.id, "approved")}>
-                    <Check className="mr-1.5 size-4" /> Approuver
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setStatus(p.id, "rejected")}>
-                    <X className="mr-1.5 size-4" /> Refuser
-                  </Button>
-                </StudentRow>
-              ))
-            )}
-          </TabsContent>
-
           <TabsContent value="approved" className="mt-6 space-y-3">
             {approved.length === 0 ? (
-              <EmptyRow text="Aucun étudiant validé pour le moment." />
+              <EmptyRow text="Aucun étudiant pour le moment." />
             ) : (
               approved.map((p) => (
                 <StudentRow key={p.id} profile={p}>
@@ -202,7 +183,7 @@ function AdminPage() {
 
           <TabsContent value="rejected" className="mt-6 space-y-3">
             {rejected.length === 0 ? (
-              <EmptyRow text="Aucune demande refusée." />
+              <EmptyRow text="Aucun accès révoqué." />
             ) : (
               rejected.map((p) => (
                 <StudentRow key={p.id} profile={p}>

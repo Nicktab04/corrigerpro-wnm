@@ -15,6 +15,13 @@
       "when": 1793671830259,
       "tag": "0001_approve_student_profiles_on_registration",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793671858332,
+      "tag": "0002_retire_legacy_signup_approval",
+      "breakpoints": true
     }
   ]
 }

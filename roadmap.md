@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Supprimer la confirmation email et aller directement aux informations étudiant
-- [ ] Vérifier une inscription complète jusqu’au catalogue
+- [x] Supprimer la confirmation email et aller directement aux informations étudiant
+- [x] Vérifier une inscription complète jusqu’au catalogue et la persistance de connexion
 
 - [x] Supprimer l’approbation à l’inscription et ouvrir les accès en attente
 - [x] Adapter le formulaire et les messages à l’accès immédiat

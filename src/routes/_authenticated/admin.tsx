@@ -5,6 +5,7 @@ import { Check, Loader2, ShieldOff, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
+import { DeleteAccountDialog } from "@/components/DeleteAccountDialog";
 import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { PricingSettings } from "@/components/PricingSettings";
 import { PaymentRequestsAdmin, usePaymentRequestsAdmin } from "@/components/PaymentRequestsAdmin";
@@ -104,7 +105,7 @@ function AdminPage() {
   }
 
   const { data: payments } = usePaymentRequestsAdmin(isAdmin);
-  const approved = (profiles ?? []).filter((p) => p.status === "approved");
+  const approved = (profiles ?? []).filter((p) => p.status !== "rejected");
   const rejected = (profiles ?? []).filter((p) => p.status === "rejected");
 
   return (
@@ -176,6 +177,7 @@ function AdminPage() {
                   <Button size="sm" variant="ghost" onClick={() => setStatus(p.id, "rejected")}>
                     Révoquer l'accès
                   </Button>
+                  <DeleteAccountDialog targetId={p.id} name={`${p.prenom} ${p.nom}`} />
                 </StudentRow>
               ))
             )}
@@ -190,6 +192,7 @@ function AdminPage() {
                   <Button size="sm" onClick={() => setStatus(p.id, "approved")}>
                     <Check className="mr-1.5 size-4" /> Accorder l'accès
                   </Button>
+                  <DeleteAccountDialog targetId={p.id} name={`${p.prenom} ${p.nom}`} />
                 </StudentRow>
               ))
             )}

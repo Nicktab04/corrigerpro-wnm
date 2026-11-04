@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Ajouter la suppression du compte depuis le profil et l’administration
+- [x] Vérifier la suppression sécurisée et la réinscription avec le même Gmail
+
 - [x] Supprimer la confirmation email et aller directement aux informations étudiant
 - [x] Vérifier une inscription complète jusqu’au catalogue et la persistance de connexion
 

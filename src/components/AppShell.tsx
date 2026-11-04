@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BookOpen, GraduationCap, LogOut, ShieldCheck } from "lucide-react";
+import { BookOpen, GraduationCap, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,9 @@ export function AppShell({
                 </Link>
               </Button>
             ) : null}
+            <Button asChild variant="ghost" size="icon">
+              <Link to="/profile" aria-label="Mon profil" title="Mon profil"><UserRound /><span className="sr-only">Mon profil</span></Link>
+            </Button>
             <Button variant="outline" size="icon" onClick={signOut} aria-label="Quitter" title="Quitter">
               <LogOut />
             </Button>

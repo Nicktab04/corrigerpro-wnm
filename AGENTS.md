@@ -16,3 +16,4 @@
 - Snapshot subscription months on payment creation and extend from the later of confirmation or existing expiry; this preserves the purchased duration and remaining time on renewal.
 - Protect subscription fields with profile guards, and use admin-only set_student_plan for manual timed grants; students must never extend their own access.
 - Limit subscription-based signed storage links to the remaining entitlement lifetime and close the in-app viewer at expiry; document purchases and free files remain unaffected.
+- Account deletion is an authenticated server function that revalidates the caller and checks roles before hard-deleting Auth; cascades remove personal records, while shared document uploads are preserved with service ownership.

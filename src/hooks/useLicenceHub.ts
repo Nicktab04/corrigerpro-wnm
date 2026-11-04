@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/lib/licencehub";
 import { signedLinkLifetime } from "@/lib/subscriptions";
+import { documentFilename } from "@/lib/document-download";
 
 export function useSessionUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -99,117 +100,11 @@ export async function openDocument(storagePath: string, expiresAt?: string | nul
   return data.signedUrl;
 }
 
-function buildFilename(storagePath: string, title: string) {
-  const extension = storagePath.split("?")[0]?.split(".").pop();
-  const cleanTitle = title.replace(/[\\/:*?"<>|]/g, "-").trim() || "document";
-  const hasExtension = extension && extension.length <= 5 && !cleanTitle.toLowerCase().endsWith(`.${extension.toLowerCase()}`);
-  return hasExtension ? `${cleanTitle}.${extension}` : cleanTitle;
-}
-
-function triggerAnchorDownload(href: string, filename: string, sameOrigin: boolean) {
-  const anchor = window.document.createElement("a");
-  anchor.href = href;
-  if (sameOrigin) anchor.download = filename;
-  anchor.rel = "noopener";
-  anchor.target = sameOrigin ? "_self" : "_blank";
-  anchor.style.display = "none";
-  window.document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-}
-
-async function blobDownload(storagePath: string, filename: string) {
+export async function prepareDocumentDownload(storagePath: string, title: string) {
   const { data, error } = await supabase.storage.from("documents").download(storagePath);
   if (error || !data) throw error ?? new Error("Téléchargement indisponible");
-  const objectUrl = URL.createObjectURL(data);
-  triggerAnchorDownload(objectUrl, filename, true);
-  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
-}
-
-/**
- * Ouvre le document dans un nouvel onglet.
- * La fenêtre est ouverte SYNCHRONEMENT (dans le geste utilisateur) puis
- * redirigée vers l'URL signée : c'est le seul moyen fiable d'éviter les
- * bloqueurs de pop-up et les onglets "about:blank" sur Safari/Chrome mobile.
- */
-export async function openDocumentInNewTab(storagePath: string, expiresAt?: string | null) {
-  const tab = window.open("", "_blank", "noopener,noreferrer");
-
-  let signedUrl: string;
-  try {
-    const { data, error } = await supabase.storage
-      .from("documents")
-      .createSignedUrl(storagePath, signedLinkLifetime(expiresAt, 3600));
-    if (error || !data?.signedUrl) throw error ?? new Error("Lien indisponible");
-    signedUrl = data.signedUrl;
-  } catch (error) {
-    tab?.close();
-    throw error;
-  }
-
-  if (tab && !tab.closed) {
-    tab.location.replace(signedUrl);
-    tab.focus();
-    return;
-  }
-
-  // Pop-up bloquée : dernier recours, on tente un clic sur une ancre puis la
-  // navigation dans l'onglet courant.
-  triggerAnchorOpen(signedUrl);
-}
-
-function triggerAnchorOpen(href: string) {
-  const anchor = window.document.createElement("a");
-  anchor.href = href;
-  anchor.target = "_blank";
-  anchor.rel = "noopener noreferrer";
-  anchor.style.display = "none";
-  window.document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => {
-    if (window.document.visibilityState === "visible") window.location.href = href;
-  }, 800);
-}
-
-export async function downloadDocument(storagePath: string, title: string) {
-  const filename = buildFilename(storagePath, title);
-  const errors: unknown[] = [];
-
-  // 1) Signed URL with attachment headers — best on iOS/Android where
-  //    blob-URL downloads are often blocked.
-  let signedUrl: string | null = null;
-  try {
-    const { data, error } = await supabase.storage
-      .from("documents")
-      .createSignedUrl(storagePath, 300, { download: filename });
-    if (error) throw error;
-    signedUrl = data?.signedUrl ?? null;
-    if (signedUrl) {
-      triggerAnchorDownload(signedUrl, filename, false);
-      return;
-    }
-  } catch (error) {
-    errors.push(error);
-  }
-
-  // 2) Fetch the private file and save the blob locally.
-  try {
-    await blobDownload(storagePath, filename);
-    return;
-  } catch (error) {
-    errors.push(error);
-  }
-
-  // 3) Last resort: open the signed link so the user can save it manually.
-  if (signedUrl) {
-    const opened = window.open(signedUrl, "_blank", "noopener");
-    if (opened) return;
-    window.location.href = signedUrl;
-    return;
-  }
-
-  throw errors[0] ?? new Error("Téléchargement indisponible");
+  if (!data.size) throw new Error("Le fichier est vide");
+  return new File([data], documentFilename(storagePath, title), { type: data.type || "application/octet-stream" });
 }
 
 

@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Remplacer les téléchargements par des fichiers directs sans nouvel onglet
+- [ ] Vérifier PDF et image depuis un compte connecté et les comportements mobiles
+
 - [x] Ajouter la suppression du compte depuis le profil et l’administration
 - [x] Vérifier la suppression sécurisée et la réinscription avec le même Gmail
 

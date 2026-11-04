@@ -14,6 +14,8 @@ import { PaymentNotices } from "@/components/PaymentNotices";
 import { useMyUnlocks } from "@/hooks/usePayments";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import { deliverDocument } from "@/lib/document-download";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,7 +27,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import {
   openDocument,
-  openDocumentInNewTab,
+  prepareDocumentDownload,
   useIsAdmin,
   useProfile,
   useSessionUser,
@@ -103,6 +105,7 @@ function Dashboard() {
   const [viewerDocument, setViewerDocument] = useState<DocumentRow | null>(null);
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [readyDownload, setReadyDownload] = useState<{ document: DocumentRow; file: File } | null>(null);
   const [unlockDocument, setUnlockDocument] = useState<DocumentRow | null>(null);
 
   useEffect(() => {
@@ -176,6 +179,12 @@ function Dashboard() {
   const linkExpiry = (doc: DocumentRow) => !isAdmin && isPremiumKind(doc.kind) && !doc.is_free && !unlocked?.has(doc.id) ? profile?.subscription_expires_at : undefined;
 
   useEffect(() => {
+    if (readyDownload && isLocked(readyDownload.document, { isAdmin, plan: profile?.plan, expiresAt: profile?.subscription_expires_at, now: subscriptionNow, unlocked })) {
+      setReadyDownload(null);
+    }
+  }, [subscriptionNow, profile, isAdmin, unlocked, readyDownload]);
+
+  useEffect(() => {
     if (viewerDocument && isLocked(viewerDocument, { isAdmin, plan: profile?.plan, expiresAt: profile?.subscription_expires_at, now: subscriptionNow, unlocked })) {
       setViewerDocument(null);
       setViewerUrl(null);
@@ -216,9 +225,19 @@ function Dashboard() {
     }
     setDownloadingId(doc.id);
     try {
-      await openDocumentInNewTab(doc.storage_path, linkExpiry(doc));
+      const file = await prepareDocumentDownload(doc.storage_path, doc.title);
+      // A slow transfer can consume Safari's user activation. In that case,
+      // keep the file ready and save from a fresh, synchronous button click.
+      if (locked(doc)) return;
+      const expiry = linkExpiry(doc);
+      if (expiry && Date.parse(expiry) <= Date.now()) return;
+      if (navigator.userActivation?.isActive) {
+        await deliverDocument(file);
+      } else {
+        setReadyDownload({ document: doc, file });
+      }
     } catch {
-      toast.error("Impossible d'ouvrir ce fichier");
+      toast.error("Impossible de télécharger ce fichier. Réessayez.");
     } finally {
       setDownloadingId(null);
     }
@@ -411,6 +430,19 @@ function Dashboard() {
         }}
         downloading={Boolean(viewerDocument && downloadingId === viewerDocument.id)}
       />
+      <AlertDialog open={Boolean(readyDownload)} onOpenChange={(open) => { if (!open) setReadyDownload(null); }}>
+        <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
+          <AlertDialogTitle>Fichier prêt</AlertDialogTitle>
+          <AlertDialogDescription className="break-words">{readyDownload?.file.name}</AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <Button onClick={() => {
+              if (!readyDownload || locked(readyDownload.document)) { setReadyDownload(null); return; }
+              void deliverDocument(readyDownload.file).then(() => setReadyDownload(null)).catch(() => toast.error("Impossible d’enregistrer le fichier. Réessayez."));
+            }}><Download /> Télécharger</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <UnlockDialog
         document={unlockDocument}
         onOpenChange={(o) => {

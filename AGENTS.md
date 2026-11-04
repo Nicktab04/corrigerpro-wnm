@@ -17,3 +17,4 @@
 - Protect subscription fields with profile guards, and use admin-only set_student_plan for manual timed grants; students must never extend their own access.
 - Limit subscription-based signed storage links to the remaining entitlement lifetime and close the in-app viewer at expiry; document purchases and free files remain unaffected.
 - Account deletion is an authenticated server function that revalidates the caller and checks roles before hard-deleting Auth; cascades remove personal records, while shared document uploads are preserved with service ownership.
+- Document downloads fetch private files through the authenticated storage client and deliver local blobs without navigation; use a prepared-file click when activation expires and the native file sheet on iOS to preserve mobile saving.

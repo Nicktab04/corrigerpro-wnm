@@ -22,7 +22,7 @@ function ProfilePage() {
   const { data: profile, isLoading } = useProfile(user?.id);
   const { data: roles } = useIsAdmin(user?.id);
   return (
-    <AppShell isAdmin={roles?.isAdmin} subtitle="Mon profil">
+    <AppShell isAdmin={roles?.isAdmin ?? false} subtitle="Mon profil">
       <div className="mx-auto max-w-xl">
         <h1 className="text-3xl font-extrabold">Mon profil</h1>
         {isLoading ? <Loader2 className="mt-8 size-5 animate-spin" /> : (

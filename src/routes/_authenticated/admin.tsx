@@ -105,7 +105,7 @@ function AdminPage() {
   }
 
   const { data: payments } = usePaymentRequestsAdmin(isAdmin);
-  const approved = (profiles ?? []).filter((p) => p.status === "approved");
+  const approved = (profiles ?? []).filter((p) => p.status !== "rejected");
   const rejected = (profiles ?? []).filter((p) => p.status === "rejected");
 
   return (

@@ -51,6 +51,26 @@ export function DocumentViewerDialog({
   const [pdfZoom, setPdfZoom] = useState(1);
   const [imageZoom, setImageZoom] = useState(1);
   const [imageNaturalWidth, setImageNaturalWidth] = useState(0);
+  const [detectedKind, setDetectedKind] = useState<ViewerKind | null>(null);
+
+  // Le nom du fichier peut ne pas porter d'extension (fichiers choisis depuis
+  // un téléphone) : on identifie alors le format réel depuis son contenu.
+  useEffect(() => {
+    setDetectedKind(null);
+    if (!url || !document || fileKind(document.storage_path) !== "other") return;
+    let active = true;
+    fetch(url)
+      .then(async (response) => {
+        const type = response.headers.get("content-type") ?? "";
+        const head = new Uint8Array((await response.arrayBuffer()).slice(0, 8));
+        const pdf = type.includes("pdf") || String.fromCharCode(...head.slice(0, 4)) === "%PDF";
+        if (active) setDetectedKind(pdf ? "pdf" : type.startsWith("image/") ? "image" : "other");
+      })
+      .catch(() => active && setDetectedKind("other"));
+    return () => {
+      active = false;
+    };
+  }, [url, document]);
 
   // Mesure la largeur disponible dès que la zone d'affichage est montée,
   // indépendamment du moment où le dialogue s'ouvre.
@@ -73,7 +93,9 @@ export function DocumentViewerDialog({
 
   if (!document) return null;
 
-  const kind = fileKind(document.storage_path);
+  const extensionKind = fileKind(document.storage_path);
+  const kind: ViewerKind = extensionKind !== "other" ? extensionKind : detectedKind ?? "pdf";
+  const detecting = extensionKind === "other" && detectedKind === null;
   // Zoom par défaut : toute la largeur visible, sans jamais agrandir le document
   // au-delà d'une taille de lecture confortable (un PDF ne dépasse pas ~800 px).
   const pdfBaseWidth = viewportWidth > 0 ? Math.min(viewportWidth, 800) : 0;
@@ -201,7 +223,7 @@ export function DocumentViewerDialog({
             ref={attachViewport}
             className="min-h-0 min-w-0 touch-pan-x touch-pan-y overflow-x-auto overflow-y-auto overscroll-contain"
           >
-            {!url ? (
+            {!url || detecting ? (
               <div className="grid h-full place-items-center">
                 <Loader2 className="size-7 animate-spin text-muted-foreground" />
               </div>

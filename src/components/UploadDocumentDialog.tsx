@@ -71,7 +71,9 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
   }
 
   async function uploadFile(target: File, m: Major, l: number) {
-    const safeName = target.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    let safeName = target.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const mimeExtension = target.type === "application/pdf" ? "pdf" : target.type.startsWith("image/") ? target.type.split("/")[1] : "";
+    if (mimeExtension && !/\.[a-z0-9]{2,5}$/i.test(safeName)) safeName += `.${mimeExtension.replace("jpeg", "jpg")}`;
     const path = `${m}/L${l}/${crypto.randomUUID()}-${safeName}`;
     const { error } = await supabase.storage.from("documents").upload(path, target);
     if (error) throw new Error(error.message);

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const WAVE_PAYMENT_URL = "https://pay.wave.com/m/M_ci_vd5eYWll6jXx/c/ci/";
+export { WAVE_PAYMENT_URL } from "@/lib/wave-payment";
 
 export type PaymentKind = "document" | "subscription";
 export type PaymentStatus = "awaiting_proof" | "pending" | "approved" | "rejected";

@@ -18,3 +18,4 @@
 - Limit subscription-based signed storage links to the remaining entitlement lifetime and close the in-app viewer at expiry; document purchases and free files remain unaffected.
 - Account deletion is an authenticated server function that revalidates the caller and checks roles before hard-deleting Auth; cascades remove personal records, while shared document uploads are preserved with service ownership.
 - Document downloads fetch private files through the authenticated storage client and deliver local blobs without navigation; use a prepared-file click when activation expires and the native file sheet on iOS to preserve mobile saving.
+- Wave payments navigate only in the current tab after saving the request; restore its proof dialog from account-scoped session storage on return to avoid mobile blank tabs.

@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Clock, Crown, FileLock2, Loader2, Lock, Upload } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,13 +15,13 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFcfa, usePricing, useSessionUser } from "@/hooks/useLicenceHub";
 import {
-  WAVE_PAYMENT_URL,
   openRequestFor,
   useMyPayments,
   type PaymentKind,
   type PaymentRequest,
 } from "@/hooks/usePayments";
 import type { DocumentRow } from "@/lib/licencehub";
+import { clearWaveReturn, readWaveReturn, startWavePayment } from "@/lib/wave-payment";
 
 export function useDocumentPrice(doc: DocumentRow | null) {
   const { data: pricing } = usePricing();
@@ -70,6 +70,13 @@ export function UnlockDialog({
   const { data: payments } = useMyPayments(user?.id);
   const price = useDocumentPrice(document);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  useEffect(() => {
+    if (!user || !document) return;
+    const saved = readWaveReturn(window.sessionStorage, user.id);
+    if (saved?.documentId === document.id) setActiveId(saved.requestId);
+  }, [user, document]);
 
   const docRequest = document ? openRequestFor(payments, { kind: "document", documentId: document.id }) : undefined;
   const subRequest = openRequestFor(payments, { kind: "subscription" });
@@ -77,40 +84,44 @@ export function UnlockDialog({
     (activeId && payments?.find((p) => p.id === activeId)) || docRequest || subRequest || null;
 
   async function pay(kind: PaymentKind) {
-    if (!user || !document) return;
-    // Onglet ouvert pendant le clic pour éviter le blocage des pop-ups.
-    const tab = window.open(WAVE_PAYMENT_URL, "_blank", "noopener,noreferrer");
-    const existing = kind === "document" ? docRequest : subRequest;
-    if (existing) {
-      setActiveId(existing.id);
-      return;
+    if (!user || !document || paying) return;
+    setPaying(true);
+    try {
+      const existing = kind === "document" ? docRequest : subRequest;
+      let requestId = existing?.id;
+      if (!requestId) {
+        const amount = kind === "document" ? (price ?? 0) : (pricing?.subscription_price ?? 0);
+        const { data, error } = await supabase
+          .from("payment_requests")
+          .insert({
+            user_id: user.id,
+            kind,
+            document_id: kind === "document" ? document.id : null,
+            amount,
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        requestId = data.id;
+      }
+      setActiveId(requestId);
+      void queryClient.invalidateQueries({ queryKey: ["my-payments"] });
+      startWavePayment({ userId: user.id, documentId: document.id, requestId }, window.sessionStorage, window.location);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Impossible d'ouvrir Wave. Réessayez.");
+    } finally {
+      setPaying(false);
     }
-    const amount = kind === "document" ? (price ?? 0) : (pricing?.subscription_price ?? 0);
-    const { data, error } = await supabase
-      .from("payment_requests")
-      .insert({
-        user_id: user.id,
-        kind,
-        document_id: kind === "document" ? document.id : null,
-        amount,
-      })
-      .select("id")
-      .single();
-    if (error) {
-      tab?.close();
-      toast.error(error.message);
-      return;
-    }
-    setActiveId(data.id);
-    await queryClient.invalidateQueries({ queryKey: ["my-payments"] });
-    if (!tab) window.location.href = WAVE_PAYMENT_URL;
   }
 
   return (
     <Dialog
       open={Boolean(document)}
       onOpenChange={(o) => {
-        if (!o) setActiveId(null);
+        if (!o) {
+          setActiveId(null);
+          clearWaveReturn(window.sessionStorage);
+        }
         onOpenChange(o);
       }}
     >
@@ -120,14 +131,16 @@ export function UnlockDialog({
           <DialogDescription>{document?.title}</DialogDescription>
         </DialogHeader>
         {active ? (
-          <ProofStep request={active} documentTitle={document?.title} />
+          <ProofStep request={active} documentTitle={document?.title} onReopen={() => pay(active.kind)} paying={paying} />
         ) : (
           <>
             <div className="grid gap-3">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                disabled={paying || !pricing || price == null}
                 onClick={() => pay("document")}
-                className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:bg-muted"
+                className="h-auto items-start gap-3 whitespace-normal rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:bg-muted"
               >
                 <FileLock2 className="mt-0.5 size-5 shrink-0 text-primary" />
                 <span className="flex-1">
@@ -137,11 +150,13 @@ export function UnlockDialog({
                   </span>
                 </span>
                 <span className="font-bold">{price != null ? formatFcfa(price) : "…"}</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                disabled={paying || !pricing}
                 onClick={() => pay("subscription")}
-                className="flex items-start gap-3 rounded-2xl border-2 border-primary bg-card p-4 text-left transition-colors hover:bg-muted"
+                className="h-auto items-start gap-3 whitespace-normal rounded-2xl border-2 border-primary bg-card p-4 text-left transition-colors hover:bg-muted"
               >
                 <Crown className="mt-0.5 size-5 shrink-0 text-primary" />
                 <span className="flex-1">
@@ -153,7 +168,7 @@ export function UnlockDialog({
                 <span className="font-bold">
                   {pricing ? formatFcfa(pricing.subscription_price) : "…"}
                 </span>
-              </button>
+              </Button>
             </div>
             <p className="text-center text-xs text-muted-foreground">
               Vous serez redirigé vers Wave pour payer. Revenez ensuite ici pour envoyer la capture
@@ -166,7 +181,7 @@ export function UnlockDialog({
   );
 }
 
-function ProofStep({ request, documentTitle }: { request: PaymentRequest; documentTitle?: string | undefined }) {
+function ProofStep({ request, documentTitle, onReopen, paying }: { request: PaymentRequest; documentTitle?: string | undefined; onReopen: () => void; paying: boolean }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -224,10 +239,8 @@ function ProofStep({ request, documentTitle }: { request: PaymentRequest; docume
             {busy ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Upload className="mr-2 size-4" />}
             {request.status === "pending" ? "Remplacer la capture" : "Envoyer la demande de validation"}
           </Button>
-          <Button variant="outline" asChild>
-            <a href={WAVE_PAYMENT_URL} target="_blank" rel="noopener noreferrer">
-              Rouvrir Wave
-            </a>
+          <Button variant="outline" onClick={onReopen} disabled={paying}>
+            Rouvrir Wave
           </Button>
         </div>
       </div>

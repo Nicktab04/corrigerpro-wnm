@@ -48,6 +48,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSubscriptionClock } from "@/hooks/useSubscriptionClock";
 import { studentDestination } from "@/lib/student-access";
+import { readWaveReturn } from "@/lib/wave-payment";
 
 function FreeToggle({
   checked,
@@ -107,6 +108,22 @@ function Dashboard() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [readyDownload, setReadyDownload] = useState<{ document: DocumentRow; file: File } | null>(null);
   const [unlockDocument, setUnlockDocument] = useState<DocumentRow | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const saved = readWaveReturn(window.sessionStorage, user.id);
+    if (!saved) return;
+    let cancelled = false;
+    void supabase.from("documents").select("*").eq("id", saved.documentId).maybeSingle().then(({ data, error }) => {
+      if (cancelled) return;
+      if (error) {
+        toast.error("Impossible de retrouver le paiement. Rouvrez le document pour envoyer votre capture.");
+        return;
+      }
+      if (data) setUnlockDocument(data as DocumentRow);
+    });
+    return () => { cancelled = true; };
+  }, [user]);
 
   useEffect(() => {
     if (profileLoading || !rolesResolved) return;

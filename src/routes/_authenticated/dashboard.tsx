@@ -11,6 +11,7 @@ import { UploadDocumentDialog } from "@/components/UploadDocumentDialog";
 import { UnlockButton, UnlockDialog } from "@/components/UnlockDialog";
 import { PriceEditor } from "@/components/PriceEditor";
 import { PaymentNotices } from "@/components/PaymentNotices";
+import { PhoneAppCard } from "@/components/PhoneAppCard";
 import { useMyUnlocks } from "@/hooks/usePayments";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -286,6 +287,7 @@ function Dashboard() {
       </div>
 
       {user && !isAdmin ? <PaymentNotices userId={user.id} documents={byId} /> : null}
+      {user && !isAdmin ? <PhoneAppCard userId={user.id} /> : null}
 
       <div className="mt-8 grid gap-3 rounded-3xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
         <Select value={major} onValueChange={(v) => setMajor(v as Major | "all")}>

@@ -147,7 +147,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
       }
 
       const mainPath = await uploadFile(file, base.major, base.level);
-      await insertDocument({
+      const mainId = await insertDocument({
         ...base,
         storage_path: mainPath,
         td_id: isCourse ? tdId : null,
@@ -159,6 +159,7 @@ export function UploadDocumentDialog({ userId }: { userId: string }) {
             : null,
       });
 
+      notifyNewDocument({ data: { documentId: mainId } }).catch((e) => console.error(e));
       await queryClient.invalidateQueries({ queryKey: ["documents"] });
       await queryClient.invalidateQueries({ queryKey: ["linked-documents"] });
       await queryClient.invalidateQueries({ queryKey: ["linkable-documents"] });

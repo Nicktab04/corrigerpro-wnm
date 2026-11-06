@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { formatFcfa } from "@/hooks/useLicenceHub";
 import { PAYMENT_STATUS_LABELS, type PaymentRequest } from "@/hooks/usePayments";
+import { notifyPaymentReviewed } from "@/lib/push.functions";
 
 export function usePaymentRequestsAdmin(enabled: boolean) {
   return useQuery({
@@ -70,6 +71,7 @@ export function PaymentRequestsAdmin({ statusFilter }: { statusFilter: "pending"
       toast.error(error.message);
       return;
     }
+    if (approve) notifyPaymentReviewed({ data: { paymentId: id } }).catch((e) => console.error(e));
     await queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
     await queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
     toast.success(approve ? "Paiement confirmé, accès ouvert" : "Paiement refusé");

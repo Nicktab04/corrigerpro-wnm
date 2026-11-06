@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, it } from "node:test";
+import { strict as assert } from "node:assert";
 import { clearWaveReturn, readWaveReturn, startWavePayment, WAVE_PAYMENT_URL } from "./wave-payment";
 
 function memoryStorage() {
@@ -15,28 +16,32 @@ const payment = { userId: "student", documentId: "correction", requestId: "payme
 describe("Wave mobile return", () => {
   it("saves the proof step before navigating the current tab to Wave", () => {
     const storage = memoryStorage();
-    const assign = vi.fn(() => expect(readWaveReturn(storage, "student")).toEqual(payment));
+    const destinations: string[] = [];
+    const assign = (url: string | URL) => {
+      assert.deepEqual(readWaveReturn(storage, "student"), payment);
+      destinations.push(String(url));
+    };
     startWavePayment(payment, storage, { assign });
-    expect(assign).toHaveBeenCalledExactlyOnceWith("https://pay.wave.com/m/M_ci_vd5eYWll6jXx/c/ci/");
-    expect(WAVE_PAYMENT_URL).toBe("https://pay.wave.com/m/M_ci_vd5eYWll6jXx/c/ci/");
+    assert.deepEqual(destinations, ["https://pay.wave.com/m/M_ci_vd5eYWll6jXx/c/ci/"]);
+    assert.equal(WAVE_PAYMENT_URL, "https://pay.wave.com/m/M_ci_vd5eYWll6jXx/c/ci/");
   });
 
   it("restores the document and request after returning from Wave", () => {
     const storage = memoryStorage();
-    startWavePayment(payment, storage, { assign: vi.fn() });
-    expect(readWaveReturn(storage, "student")).toEqual(payment);
+    startWavePayment(payment, storage, { assign: () => {} });
+    assert.deepEqual(readWaveReturn(storage, "student"), payment);
     clearWaveReturn(storage);
-    expect(readWaveReturn(storage, "student")).toBeNull();
+    assert.equal(readWaveReturn(storage, "student"), null);
   });
 
   it("never restores another student's payment", () => {
     const storage = memoryStorage();
-    startWavePayment(payment, storage, { assign: vi.fn() });
-    expect(readWaveReturn(storage, "other-student")).toBeNull();
+    startWavePayment(payment, storage, { assign: () => {} });
+    assert.equal(readWaveReturn(storage, "other-student"), null);
   });
 
   it("ignores malformed return data", () => {
-    expect(readWaveReturn({ getItem: () => "not-json" }, "student")).toBeNull();
-    expect(readWaveReturn({ getItem: () => '{"userId":"student"}' }, "student")).toBeNull();
+    assert.equal(readWaveReturn({ getItem: () => "not-json" }, "student"), null);
+    assert.equal(readWaveReturn({ getItem: () => '{"userId":"student"}' }, "student"), null);
   });
 });

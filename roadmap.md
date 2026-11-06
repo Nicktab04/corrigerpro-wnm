@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Éviter les onglets blancs Wave et restaurer la demande au retour du paiement
-- [ ] Vérifier le retour mobile pour un document, un abonnement et la réouverture de Wave
+- [x] Éviter les onglets blancs Wave et restaurer la demande au retour du paiement
+- [x] Vérifier document, abonnement et réouverture en Chrome mobile simulé : un seul onglet, capture retrouvée après retour et actualisation ; ouverture de l’application Wave sur téléphone réel non vérifiée
 
 - [x] Remplacer les téléchargements par des fichiers directs sans nouvel onglet
 - [x] Vérifier PDF et image depuis un compte connecté, sans nouvel onglet, sur écran mobile ; feuille iOS vérifiée par test, appareils Safari/Chrome réels non disponibles

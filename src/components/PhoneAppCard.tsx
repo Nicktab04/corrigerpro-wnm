@@ -61,7 +61,7 @@ export function PhoneAppCard({ userId }: { userId: string }) {
       };
       if (r.status === "registered") {
         setNotifOn(true);
-        toast.success(msg.registered);
+        toast.success(msg["registered"]);
       } else toast.error(msg[r.status], { duration: 9000 });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Activation impossible");

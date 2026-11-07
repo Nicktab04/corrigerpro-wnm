@@ -42,6 +42,7 @@ export async function enablePush(userId: string): Promise<PushResult> {
   const app = getApps()[0] ?? initializeApp(firebaseConfig);
   const token = await getToken(getMessaging(app), { vapidKey, serviceWorkerRegistration });
   if (!token) return { status: "denied" };
-  await supabase.from("push_tokens").upsert({ token, user_id: userId });
+  const { error } = await supabase.from("push_tokens").upsert({ token, user_id: userId });
+  if (error) throw new Error("Impossible d’enregistrer les notifications. Réessayez.");
   return { status: "registered" };
 }

@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Afficher l’invitation aux notifications après création du compte ou prochaine connexion, sans exiger l’installation
+- [x] Garder le bouton manuel et vérifier inscription, reconnexion, actualisation et message iPhone sur écran mobile ; autorisation native et réception sur téléphone réel non vérifiées
+
 - [x] Éviter les onglets blancs Wave et restaurer la demande au retour du paiement
 - [x] Vérifier document, abonnement et réouverture en Chrome mobile simulé : un seul onglet, capture retrouvée après retour et actualisation ; ouverture de l’application Wave sur téléphone réel non vérifiée
 

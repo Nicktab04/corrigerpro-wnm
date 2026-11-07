@@ -20,3 +20,4 @@
 - Document downloads fetch private files through the authenticated storage client and deliver local blobs without navigation; use a prepared-file click when activation expires and the native file sheet on iOS to preserve mobile saving.
 - Wave payments navigate only in the current tab after saving the request; restore its proof dialog from account-scoped session storage on return to avoid mobile blank tabs.
 - Push notifications use Firebase via the connector gateway from authenticated server functions; device tokens live in push_tokens so sends target only the student's devices.
+- Show the push invitation from the shared app shell for non-admin users, with account-scoped per-login session history; this covers registration and existing logins without repeating on navigation or token refresh. Native permission requests remain click-driven.

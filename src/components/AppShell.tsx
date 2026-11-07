@@ -4,6 +4,7 @@ import { BookOpen, GraduationCap, LogOut, ShieldCheck, UserRound } from "lucide-
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { NotificationInvitation } from "@/components/NotificationInvitation";
 import { supabase } from "@/integrations/supabase/client";
 
 export function AppShell({
@@ -65,6 +66,7 @@ export function AppShell({
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-5 py-10">{children}</main>
+      <NotificationInvitation />
     </div>
   );
 }

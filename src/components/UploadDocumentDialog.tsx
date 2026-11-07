@@ -1,3 +1,4 @@
+import { notifyNewDocument } from "@/lib/push.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Loader2, Upload } from "lucide-react";
